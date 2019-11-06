@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option csharp_namespace = "Caching.Faster.Proxy";
+
+package Common;
+
+
+message KeyValuePair {
+	string key = 1;
+	bytes value = 2;
+	int32 ttl = 3;
+	bool status = 4;
+}

@@ -1,0 +1,204 @@
+﻿using Caching.Faster.Abstractions;
+using Caching.Faster.Proxy.ServiceDiscovery.GKE.HostedServices;
+using Caching.Faster.Workers.Client;
+using Grpc.Net.Client;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+
+
+namespace Caching.Faster.Proxy.Hashing
+{
+    public class ConsistentHash
+    {
+        bool _initialized = false;
+        int _replicate = 300;    //default _replicate count
+        int[] _orderedKeys = null;    //cache the ordered keys for better performance
+
+        readonly SortedDictionary<int, Worker> circle = new SortedDictionary<int, Worker>();
+        readonly SortedDictionary<string, GrpcClient> channels = new SortedDictionary<string, GrpcClient>();
+
+
+        public ILogger<ConsistentHash> Logger { get; }
+
+        public ConsistentHash(ILogger<ConsistentHash> logger)
+        {
+            K8SServiceDiscoveryHostedService.OnDiscoveryCompleted += K8SServiceDiscoveryHostedService_OnDiscoveryCompleted;
+            Logger = logger;
+        }
+
+        private void K8SServiceDiscoveryHostedService_OnDiscoveryCompleted(object sender, FasterWorkers e)
+        {
+            if (!_initialized)
+            {
+                Init(e.GetWorkers());
+            }
+            else
+            {
+                foreach (var w in e.GetWorkers())
+                {
+                    var found = false;
+                    foreach (var cw in circle.Values)
+                    {
+
+                        if (cw.Address == w.Address)
+                        {
+                            // we found it so lets update if necessary
+                            if (!w.IsActive)
+                            {
+                                Remove(cw);
+                            }
+
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        Add(w);
+                    }
+                }
+            }
+        }
+
+
+        //it's better you override the GetHashCode() of T.
+        //we will use GetHashCode() to identify different node.
+        public void Init(IEnumerable<Worker> nodes)
+        {
+            Init(nodes, _replicate);
+        }
+
+        public void Init(IEnumerable<Worker> nodes, int replicate)
+        {
+            _initialized = true;
+
+            _replicate = replicate;
+
+            foreach (var node in nodes)
+            {
+                this.Add(node, false);
+            }
+            _orderedKeys = circle.Keys.ToArray();
+        }
+
+        public void Add(Worker node)
+        {
+            Add(node, true);
+        }
+
+        private void Add(Worker node, bool updateKeyArray)
+        {
+            Logger.LogInformation($"Joining {node.Name} with endpoint https://{node.Address}:{node.Port}");
+
+            if (!channels.TryGetValue(node.Name, out _))
+            {
+                channels.Add(node.Name, new GrpcClient( new GrpcWorker.GrpcWorkerClient( GrpcChannel.ForAddress($"https://{node.Address}:{node.Port}"))));
+
+                Logger.LogInformation($"Worker {node.Name} joined.");
+            }
+
+            for (var i = 0; i < _replicate; i++)
+            {
+                var h = $"{node}{i}".GetConsistentHashCode();
+                var hash = BetterHash($"{h}");
+                circle[hash] = node;
+            }
+
+            if (updateKeyArray)
+            {
+                _orderedKeys = circle.Keys.ToArray();
+            }
+        }
+
+        public void Remove(Worker node)
+        {
+            Logger.LogInformation($"Removing {node.Name} with endpoint https://{node.Address}:{node.Port}");
+
+            if (channels.TryGetValue(node.Name, out _))
+            {
+                channels.Remove(node.Name);
+
+                Logger.LogInformation($"Worker {node.Name} removed.");
+            }
+
+            for (var i = 0; i < _replicate; i++)
+            {
+                var h = $"{node}{i}".GetConsistentHashCode();
+
+                var hash = BetterHash($"{h}");
+
+                if (!circle.Remove(hash))
+                {
+                    throw new Exception("cannot remove a node that not added");
+                }
+            }
+            _orderedKeys = circle.Keys.ToArray();
+        }
+
+        //return the index of first item that >= val.
+        //if not exist, return 0;
+        //ay should be ordered array.
+        int First_ge(int[] ay, int val)
+        {
+            var begin = 0;
+            var end = ay.Length - 1;
+
+            if (ay[end] < val || ay[0] > val)
+            {
+                return 0;
+            }
+
+            while (end - begin > 1)
+            {
+                var mid = (end + begin) / 2;
+                if (ay[mid] >= val)
+                {
+                    end = mid;
+                }
+                else
+                {
+                    begin = mid;
+                }
+            }
+
+            if (ay[begin] > val || ay[end] < val)
+            {
+                throw new Exception("should not happen");
+            }
+
+            return end;
+        }
+
+        public Worker GetNode(string key)
+        {
+            //return GetNode_slow(key);
+
+            var hash = BetterHash(key);
+
+            var first = First_ge(_orderedKeys, hash);
+
+            //int diff = circle.Keys[first] - hash;
+
+            return circle[_orderedKeys[first]];
+        }
+
+        // need to move this to another class
+        public GrpcClient GetGrpcChannel(Worker key)
+        {
+            return channels[key.Name];
+        }
+
+        //default String.GetHashCode() can't well spread strings like "1", "2", "3"
+        public static int BetterHash(string key)
+        {
+            var hash = MurmurHash2.Hash(Encoding.ASCII.GetBytes(key));
+            return (int)hash;
+        }
+    }
+}

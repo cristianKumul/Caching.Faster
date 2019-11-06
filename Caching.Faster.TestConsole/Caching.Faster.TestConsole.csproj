@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="KubernetesClient" Version="1.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\common.proto" GrpcServices="Client" />
+    <Protobuf Include="Protos\client.proto" GrpcServices="Client" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.23.1" />
+    <ProjectReference Include="..\Caching.Faster.Proxy.ServiceDiscovery.GKE\Caching.Faster.Proxy.ServiceDiscovery.GKE.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Protos\client.proto">
+      <GrpcServices>Server</GrpcServices>
+    </None>
+    <None Update="Protos\common.proto">
+      <GrpcServices>Server</GrpcServices>
+    </None>
+    <None Update="token">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="ca.crt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

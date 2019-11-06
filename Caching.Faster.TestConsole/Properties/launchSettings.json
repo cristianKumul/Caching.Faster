@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Caching.Faster.TestConsole": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "KUBERNETES_SERVICE_PORT": "443",
+        "KUBERNETES_SERVICE_HOST": "35.202.120.10"
+      }
+    }
+  }
+}
