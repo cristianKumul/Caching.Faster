@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Caching.Faster.Abstractions
 {
-    public struct FasterWorkers
+    public class FasterWorkers
     {
         private bool initialized;
         /// <summary>
@@ -21,7 +21,7 @@ namespace Caching.Faster.Abstractions
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public Worker this[string address] { get { return workers[address]; } }
+        public Worker this[string name] { get { return workers[name]; } }
 
         /// <summary>
         /// 
@@ -31,7 +31,7 @@ namespace Caching.Faster.Abstractions
         {
             CheckInit();
 
-            workers.AddOrUpdate(worker.Address, worker, (s, w) => {  return worker; });
+            workers.AddOrUpdate(worker.Name, worker, (s, w) => {  return worker; });
         }
 
         public void Join(string name, string address, int port, bool active = true)
@@ -59,11 +59,11 @@ namespace Caching.Faster.Abstractions
             }
         }
 
-        public void SetStatus(string address, bool active = true, bool markForDeletion = false)
+        public void SetStatus(string name, bool active = true, bool markForDeletion = false)
         {
             if (initialized)
             {
-                var w = workers[address];
+                var w = workers[name];
 
                 w.IsActive = active;
                 w.IsMarkedForDeletion = markForDeletion;

@@ -5,7 +5,7 @@
       "launchBrowser": false,
       "applicationUrl": "https://localhost:5001",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_ENVIRONMENT": "Production",
         "KUBERNETES_SERVICE_PORT": "443",
         "KUBERNETES_SERVICE_HOST": "35.202.120.10"
       }

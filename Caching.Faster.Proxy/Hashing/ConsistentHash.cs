@@ -1,6 +1,7 @@
 ﻿using Caching.Faster.Abstractions;
 using Caching.Faster.Proxy.ServiceDiscovery.GKE.HostedServices;
 using Caching.Faster.Workers.Client;
+using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,7 +10,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-
+using static Caching.Faster.Worker.GrpcWorker;
 
 namespace Caching.Faster.Proxy.Hashing
 {
@@ -19,8 +20,8 @@ namespace Caching.Faster.Proxy.Hashing
         int _replicate = 300;    //default _replicate count
         int[] _orderedKeys = null;    //cache the ordered keys for better performance
 
-        readonly SortedDictionary<int, Worker> circle = new SortedDictionary<int, Worker>();
-        readonly SortedDictionary<string, GrpcClient> channels = new SortedDictionary<string, GrpcClient>();
+        readonly SortedDictionary<int, Caching.Faster.Abstractions.Worker> circle = new SortedDictionary<int, Caching.Faster.Abstractions.Worker>();
+        readonly SortedDictionary<string, GrpcWorkerClient> channels = new SortedDictionary<string, GrpcWorkerClient>();
 
 
         public ILogger<ConsistentHash> Logger { get; }
@@ -69,12 +70,12 @@ namespace Caching.Faster.Proxy.Hashing
 
         //it's better you override the GetHashCode() of T.
         //we will use GetHashCode() to identify different node.
-        public void Init(IEnumerable<Worker> nodes)
+        public void Init(IEnumerable<Caching.Faster.Abstractions.Worker> nodes)
         {
             Init(nodes, _replicate);
         }
 
-        public void Init(IEnumerable<Worker> nodes, int replicate)
+        public void Init(IEnumerable<Caching.Faster.Abstractions.Worker> nodes, int replicate)
         {
             _initialized = true;
 
@@ -82,30 +83,30 @@ namespace Caching.Faster.Proxy.Hashing
 
             foreach (var node in nodes)
             {
-                this.Add(node, false);
+                this.Add(node, true);
             }
             _orderedKeys = circle.Keys.ToArray();
         }
 
-        public void Add(Worker node)
+        public void Add(Caching.Faster.Abstractions.Worker node)
         {
             Add(node, true);
         }
 
-        private void Add(Worker node, bool updateKeyArray)
+        private void Add(Caching.Faster.Abstractions.Worker node, bool updateKeyArray)
         {
-            Logger.LogInformation($"Joining {node.Name} with endpoint https://{node.Address}:{node.Port}");
+            Logger.LogInformation($"Joining {node.Name} with endpoint {node.Address} on port {node.Port}");
 
-            if (!channels.TryGetValue(node.Name, out _))
+            if (!channels.TryGetValue(node.Address, out _))
             {
-                channels.Add(node.Name, new GrpcClient( new GrpcWorker.GrpcWorkerClient( GrpcChannel.ForAddress($"https://{node.Address}:{node.Port}"))));
+                channels.Add(node.Address, new GrpcWorkerClient(new Channel(node.Address, node.Port, ChannelCredentials.Insecure)));
 
                 Logger.LogInformation($"Worker {node.Name} joined.");
             }
 
             for (var i = 0; i < _replicate; i++)
             {
-                var h = $"{node}{i}".GetConsistentHashCode();
+                var h = $"{node.Name}{node.Port}{node.Address}{i}".GetConsistentHashCode();
                 var hash = BetterHash($"{h}");
                 circle[hash] = node;
             }
@@ -116,20 +117,20 @@ namespace Caching.Faster.Proxy.Hashing
             }
         }
 
-        public void Remove(Worker node)
+        public void Remove(Caching.Faster.Abstractions.Worker node)
         {
-            Logger.LogInformation($"Removing {node.Name} with endpoint https://{node.Address}:{node.Port}");
+            Logger.LogInformation($"Joining {node.Name} with endpoint {node.Address} on port {node.Port}");
 
-            if (channels.TryGetValue(node.Name, out _))
+            if (channels.TryGetValue(node.Address, out _))
             {
-                channels.Remove(node.Name);
+                channels.Remove(node.Address);
 
                 Logger.LogInformation($"Worker {node.Name} removed.");
             }
 
             for (var i = 0; i < _replicate; i++)
             {
-                var h = $"{node}{i}".GetConsistentHashCode();
+                var h = $"{node.Name}{node.Port}{node.Address}{i}".GetConsistentHashCode();
 
                 var hash = BetterHash($"{h}");
 
@@ -175,7 +176,7 @@ namespace Caching.Faster.Proxy.Hashing
             return end;
         }
 
-        public Worker GetNode(string key)
+        public Caching.Faster.Abstractions.Worker GetNode(string key)
         {
             //return GetNode_slow(key);
 
@@ -189,9 +190,9 @@ namespace Caching.Faster.Proxy.Hashing
         }
 
         // need to move this to another class
-        public GrpcClient GetGrpcChannel(Worker key)
+        public GrpcWorkerClient GetGrpcChannel(Caching.Faster.Abstractions.Worker key)
         {
-            return channels[key.Name];
+            return channels[key.Address];
         }
 
         //default String.GetHashCode() can't well spread strings like "1", "2", "3"

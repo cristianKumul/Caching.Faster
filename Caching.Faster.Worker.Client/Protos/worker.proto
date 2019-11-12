@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option csharp_namespace = "Caching.Faster";
+
+package Worker;
+
+service GrpcWorker {
+  rpc Get (GetWorkerRequest) returns (GetWorkerResponse);
+  rpc Set (SetWorkerRequest) returns (SetWorkerResponse);
+}
+
+message GetWorkerRequest {
+  repeated string key = 1;
+}
+
+message GetWorkerResponse {
+  repeated KeyValuePair results = 1;
+}
+
+message SetWorkerRequest {
+  repeated KeyValuePair pairs = 1;
+}
+
+message SetWorkerResponse {
+  repeated KeyValuePair results = 1;
+}
+
+message KeyValuePair {
+	string key = 1;
+	bytes value = 2;
+	int32 ttl = 3;
+	bool status = 4;
+}

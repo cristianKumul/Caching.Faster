@@ -2,7 +2,7 @@
 
 namespace Caching.Faster.Abstractions
 {
-    public struct Worker : IEquatable<Worker>
+    public class Worker : IEquatable<Worker>
     {
         public bool IsActive;
         public bool IsMarkedForDeletion;

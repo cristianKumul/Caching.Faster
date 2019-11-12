@@ -1,8 +1,12 @@
-﻿using Grpc.Net.Client;
+﻿using Caching.Faster.Workers.Client;
+using Grpc.Core;
+using Grpc.Net.Client;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using static Caching.Faster.Worker.GrpcWorker;
 
 namespace Caching.Faster.Proxy.Hashing
 {
@@ -15,17 +19,27 @@ namespace Caching.Faster.Proxy.Hashing
             this.consistentHash = consistentHash;
         }
 
-        public async ValueTask<IEnumerable<Workers.KeyValuePair>> GetValuePairs(IEnumerable<string> keys)
+        public async IAsyncEnumerable<Common.KeyValuePair> GetValuePairs(IEnumerable<string> keys, Stopwatch sw)
         {
-            var c = new Dictionary<string, Workers.Client.GrpcClient>();
+            await foreach (var item in GetValuePairs3(keys, sw))
+            {
+                foreach (var keypair in item)
+                {
+                    yield return keypair;
+                }
+            }
+
+        }
+        public async IAsyncEnumerable<IEnumerable<Common.KeyValuePair>> GetValuePairs3(IEnumerable<string> keys, Stopwatch sw)
+        {
+            //Console.WriteLine($"GetValuePairs3: Start getting paris");
+
             var k = new Dictionary<string, List<string>>();
 
             foreach (var key in keys)
             {
                 var node = consistentHash.GetNode(key);
-                var client = consistentHash.GetGrpcChannel(node);
 
-                c.TryAdd(node.Address, client);
 
                 if (k.TryGetValue(node.Address, out var list))
                 {
@@ -37,26 +51,33 @@ namespace Caching.Faster.Proxy.Hashing
                 }
 
             }
-            var tasks = new List<Task<IEnumerable<Workers.KeyValuePair>>>();
 
-            foreach (var pair in c)
+            //Console.WriteLine($"GetValuePairs3: time to get node {sw.ElapsedMilliseconds}");
+
+            foreach (var key in k)
             {
-                var ks = k[pair.Key] as IEnumerable<string>;
-
-                tasks.Add(pair.Value.GetKeys(ks));
-
+                var vs = new Worker.GetWorkerRequest();
+                vs.Key.AddRange(key.Value);
+                var rs = await consistentHash.GetGrpcChannel(consistentHash.GetNode(key.Value[0])).GetAsync(vs);
+                yield return rs.Results;
             }
 
-            var res = await Task.WhenAll(tasks);
-
-            return res.SelectMany(p => p);
+            //Console.WriteLine($"GetValuePairs3: end returning pairs {sw.ElapsedMilliseconds}");
 
         }
 
-        public async ValueTask<IEnumerable<Workers.KeyValuePair>> SetValuePairs(IEnumerable<KeyValuePair> keys)
+
+        public async IAsyncEnumerable<IEnumerable<Common.KeyValuePair>> SetValuePairs(IEnumerable<Common.KeyValuePair> keys)
         {
-            var c = new Dictionary<string, Workers.Client.GrpcClient>();
-            var k = new Dictionary<string, List<KeyValuePair>>();
+            //var grpcWorkerClient = new GrpcWorker.GrpcWorkerClient(new Channel("localhost", 90, ChannelCredentials.Insecure));
+            //var eq = keys.First();
+            //var x = new SetWorkerRequest();
+            //x.Pairs.Add(new Faster.KeyValuePair() { Key = eq.Key, Status = eq.Status, Ttl = eq.Ttl, Value = eq.Value });
+            //var r = await grpcWorkerClient.SetAsync(x);
+
+
+            var c = new Dictionary<string, GrpcWorkerClient>();
+            var k = new Dictionary<string, List<Common.KeyValuePair>>();
 
             foreach (var key in keys)
             {
@@ -71,23 +92,23 @@ namespace Caching.Faster.Proxy.Hashing
                 }
                 else
                 {
-                    k.Add(node.Address, new List<KeyValuePair>() { key });
+                    k.Add(node.Address, new List<Common.KeyValuePair>() { key });
                 }
 
             }
-            var tasks = new List<Task<IEnumerable<Workers.KeyValuePair>>>();
+
 
             foreach (var pair in c)
             {
-                var ks = k[pair.Key] as IEnumerable<Workers.KeyValuePair>;
+                var x = new Worker.SetWorkerRequest();
 
-                tasks.Add(pair.Value.SetKeys(ks));
+                x.Pairs.AddRange(k[pair.Key]);
 
+                var rs = await pair.Value.SetAsync(x);
+
+                yield return rs.Results;
             }
 
-            var res = await Task.WhenAll(tasks);
-
-            return res.SelectMany(p => p);
 
         }
     }

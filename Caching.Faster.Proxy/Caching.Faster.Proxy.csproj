@@ -9,13 +9,30 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Protobuf Include="Protos\common.proto" GrpcServices="Server" />
-    <Protobuf Include="Protos\client.proto" GrpcServices="Server" />
+    <None Remove="Protos\common.proto" />
+    <None Remove="Protos\worker.proto" />
   </ItemGroup>
 
   <ItemGroup>
+    <Protobuf Include="Protos\worker.proto" GrpcServices="Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\common.proto" GrpcServices="Client" />
+  </ItemGroup>
+  <ItemGroup>
+    <Protobuf Include="Protos\proxy.proto" GrpcServices="Server" />
+  </ItemGroup>
+
+
+  <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.23.1" />
+    <PackageReference Include="Grpc.Core" Version="2.25.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.7.12" />
   </ItemGroup>
 

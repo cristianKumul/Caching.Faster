@@ -1,5 +1,4 @@
-﻿using Grpc.Net.Client;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -12,8 +11,6 @@ namespace Caching.Faster.Workers.Client
         public GrpcClient(GrpcWorker.GrpcWorkerClient client)
         {
             this.client = client;
-
-     
         }
 
         public async Task<IEnumerable<KeyValuePair>> GetKeys(IEnumerable<string> keys)

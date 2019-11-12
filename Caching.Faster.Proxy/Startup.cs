@@ -1,6 +1,7 @@
 ﻿using Caching.Faster.Proxy.Hashing;
 using Caching.Faster.Proxy.ServiceDiscovery.GKE;
 using Caching.Faster.Proxy.ServiceDiscovery.GKE.HostedServices;
+using Grpc.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -25,11 +26,18 @@ namespace Caching.Faster.Proxy
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddLogging();
-            services.AddGrpc();
+            services.AddGrpc( opt => {
+                opt.CompressionProviders.Clear();
+                opt.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.NoCompression;
+                opt.MaxReceiveMessageSize = int.MaxValue;
+                opt.MaxSendMessageSize = int.MaxValue;
+                
+            });
             services.AddSingleton<K8SServiceDiscovery>();
             services.AddSingleton<ConsistentHash>();
             services.AddSingleton<ChannelDistribution>();
             services.AddHostedService<K8SServiceDiscoveryHostedService>();
+            services.AddTransient<CachingService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,22 +47,16 @@ namespace Caching.Faster.Proxy
                 .ApplicationServices
                 .GetService<ConsistentHash>();
 
-            if (env.IsDevelopment())
+            var server = new Server
             {
-                app.UseDeveloperExceptionPage();
-            }
+                Ports = { new ServerPort("0.0.0.0", 90, ServerCredentials.Insecure) }
+            };
 
-            app.UseRouting();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapGrpcService<CachingService>();
+            server.Services.Add(Caching.Faster.Proxy.ProxyCache.BindService(app.ApplicationServices.CreateScope().ServiceProvider.GetService<CachingService>()));
 
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
-                });
-            });
+            server.Start();
+
         }
     }
 }

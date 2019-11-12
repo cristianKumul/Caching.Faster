@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Caching.Faster.Proxy.Hashing;
@@ -9,35 +10,41 @@ using Microsoft.Extensions.Logging;
 
 namespace Caching.Faster.Proxy
 {
-    public class CachingService : Cache.CacheBase
+    public class CachingService : Caching.Faster.Proxy.ProxyCache.ProxyCacheBase
     {
-        private readonly ILogger<CachingService> logger;
-        private readonly ChannelDistribution channelDistribution;
+        private readonly ChannelDistribution channeldistribution;
 
-        public CachingService(ILogger<CachingService> logger, ChannelDistribution channelDistribution)
+        public CachingService(ChannelDistribution channeldistribution)
         {
-            this.logger = logger;
-            this.channelDistribution = channelDistribution;
+            this.channeldistribution = channeldistribution;
         }
 
         public override async Task<GetResponse> Get(GetRequest request, ServerCallContext context)
         {
-            var pairs = await channelDistribution.GetValuePairs(request.Key.ToArray());
-
             var response = new GetResponse();
+            var sw = new Stopwatch();
+            sw.Restart();
 
-            response.Results.AddRange(pairs.Select(p => new KeyValuePair() { Key = p.Key, Value = p.Value }));
+            await foreach (var p in channeldistribution.GetValuePairs(request.Key, sw))
+            {
+                //Console.WriteLine($"get: time to get pairs {sw.ElapsedMilliseconds}");
+                response.Results.Add(p);
+            }
+
+            //Console.WriteLine($"get: writing response {sw.ElapsedMilliseconds}");
+            //Console.WriteLine($"\n\n");
 
             return response;
         }
 
         public override async Task<SetResponse> Set(SetRequest request, ServerCallContext context)
         {
-            var pairs = await channelDistribution.SetValuePairs(request.Pairs.ToArray());
-
             var response = new SetResponse();
 
-            response.Results.AddRange(pairs.Select(p => new KeyValuePair() { Key = p.Key, Status = p.Status }));
+            await foreach (var p in channeldistribution.SetValuePairs(request.Pairs))
+            {
+                response.Results.AddRange(p);
+            }
 
             return response;
         }

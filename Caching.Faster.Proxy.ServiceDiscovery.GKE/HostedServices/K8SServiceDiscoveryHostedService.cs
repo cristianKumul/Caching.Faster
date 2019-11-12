@@ -9,7 +9,7 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE.HostedServices
 {
     public class K8SServiceDiscoveryHostedService : IHostedService, IDisposable
     {
-        private readonly int _scrapeInterval = 15;
+        private readonly int _scrapeInterval = 5;
         private int _executionCount = 0;
 
         private readonly ILogger<K8SServiceDiscoveryHostedService> _logger;

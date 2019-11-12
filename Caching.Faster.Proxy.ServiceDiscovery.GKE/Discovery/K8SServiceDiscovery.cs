@@ -21,7 +21,7 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE
         private string[] observedNamespaces;
 
         // cached workers that refresh every 15 secs
-        private FasterWorkers workers;
+        private FasterWorkers workers = new FasterWorkers();
 
         // event to notify for changes
         public event EventHandler<FasterWorkers> OnDiscoveryCompleted;
@@ -91,14 +91,6 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE
 
         private void ParsePod(string ns, V1PodList list, bool observe = false)
         {
-            //423
-            //204
-            //231
-            workers.Join("9191", "localhost", 9191, true);
-            //workers.Join("204", "localhost", 204, true);
-            //workers.Join("423", "localhost", 423, true);
-
-            return;
             // lets try to find a worker
             foreach (var item in list.Items)
             {
@@ -123,21 +115,21 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE
                         var status = default(V1ContainerStatus);
 
                         // lets check if ready
-                        if ((status = item.Status.ContainerStatuses.FirstOrDefault()) != null)
+                        if ((status = item.Status?.ContainerStatuses?.FirstOrDefault()) != null)
                         {
                             // so add or refresh the worker with current status
-                            workers.Join(item.Metadata.Name, item.Status.PodIP, Convert.ToInt32(listenPort), status.Ready);
+                            workers.Join(item.Metadata?.Name, item.Status?.PodIP, Convert.ToInt32(listenPort), status.Ready);
                         }
                         else
                         {
                             // we could not retrieve status metadata, so lets mark as inactive
-                            workers.SetStatus(item.Status.PodIP, false, false);
+                            workers.SetStatus(item.Status?.PodIP, false, false);
                         }
                     }
                     else
                     {
                         // we could not retrieve status metadata, so lets mark as inactive the pod is marked as disabled so lets refresh our ring if neccessary
-                        workers.SetStatus(item.Status.PodIP, false, false);
+                        workers.SetStatus(item.Status?.PodIP, false, true);
                     }
                 }
             }
@@ -149,6 +141,7 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE
         /// <param name="ns"></param>
         private void ObservedNamespaces(string ns)
         {
+
             bool saved = false;
 
             //search for an empy slot to save                     
