@@ -81,8 +81,68 @@ namespace Caching.Faster.Workers.Core
         }
     }
 
+    public class CacheHeaderValueSerializer : BinaryObjectSerializer<OutputHeader>
+    {
+        public override void Deserialize(ref OutputHeader obj)
+        {
+            obj.value = reader.ReadBytes((int)reader.BaseStream.Length);
+        }
+
+        public override void Serialize(ref OutputHeader obj)
+        {
+            writer.Write(obj.value);
+        }
+    }
+
+    public class Key : IFasterEqualityComparer<Key>
+    {
+        public long key;
+
+        public Key() { }
+
+        public Key(long first)
+        {
+            key = first;
+        }
+
+        public long GetHashCode64(ref Key key)
+        {
+            return Utility.GetHashCode(key.key);
+        }
+        public bool Equals(ref Key k1, ref Key k2)
+        {
+            return k1.key == k2.key;
+        }
+    }
+
+    public class CacheInputHeaderSerializer : BinaryObjectSerializer<InputHeader>
+    {
+        public override void Deserialize(ref InputHeader obj)
+        {
+            
+            obj.key = reader.ReadString();
+        }
+
+        public override void Serialize(ref InputHeader obj)
+        {
+            writer.Write(obj.key);
+        }
+    }
+
     public struct Input
     {
+
+    }
+
+    public struct InputHeader
+    {
+        public string key;
+    }
+
+    public struct OutputHeader
+    {
+        public long uuid;
+        public long epoch;
     }
 
     public struct Output
@@ -158,15 +218,5 @@ namespace Caching.Faster.Workers.Core
             throw new NotImplementedException();
         }
 
-        //bool IFunctions<Key, Value, Input, Output, CacheContext>.InPlaceUpdater(ref Key key, ref Input input, ref Value value)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //bool IFunctions<Key, Value, Input, Output, CacheContext>.ConcurrentWriter(ref Key key, ref Value src, ref Value dst)
-        //{
-        //    dst = src;
-        //    return true;
-        //}
     }
 }
