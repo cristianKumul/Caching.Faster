@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace Caching.Faster.Workers.Extensions
 {
+
     public static class Extensions
     {
         public static unsafe long GetConsistentHashCode(this string str)

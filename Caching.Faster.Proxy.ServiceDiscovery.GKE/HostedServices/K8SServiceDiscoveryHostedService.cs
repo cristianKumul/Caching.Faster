@@ -69,5 +69,5 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE.HostedServices
         {
             _timer?.Dispose();
         }
-    }
+    } 
 }

@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.10.1" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.23.1" />
     <PackageReference Include="Grpc.Core" Version="2.25.0" />
     <PackageReference Include="Grpc.Tools" Version="2.24.0">
       <PrivateAssets>all</PrivateAssets>
@@ -24,7 +23,7 @@
 
   <ItemGroup>
     <None Update="Protos\worker.proto">
-      <GrpcServices>Server</GrpcServices>
+      <GrpcServices>Client</GrpcServices>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

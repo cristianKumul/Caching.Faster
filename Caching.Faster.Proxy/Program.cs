@@ -15,7 +15,6 @@ namespace Caching.Faster.Proxy
         private static bool EnableLogging => bool.Parse(Environment.GetEnvironmentVariable("EnableLogging") ?? "false");
         public static void Main(string[] args)
         {
-            Environment.SetEnvironmentVariable("ASPNETCORE_URLS", "https://*:88");
             CreateHostBuilder(args).Build().Run();
         }
 

@@ -15,6 +15,7 @@ namespace Caching.Faster.Workers.Client
 
         public async Task<IEnumerable<KeyValuePair>> GetKeys(IEnumerable<string> keys)
         {
+   
             return (await client.GetAsync(keys.GetRequest())).Results;
         }
 

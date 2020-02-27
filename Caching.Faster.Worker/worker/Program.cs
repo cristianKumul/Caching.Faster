@@ -12,6 +12,7 @@ namespace Caching.Faster.Worker
 {
     public class Program
     {
+        private static bool EnableLogging => bool.Parse(Environment.GetEnvironmentVariable("EnableLogging") ?? "false");
         public static void Main(string[] args)
         {
             ThreadPool.SetMinThreads(1000, 1000);
@@ -26,7 +27,11 @@ namespace Caching.Faster.Worker
         // For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureLogging((c, a) => a.ClearProviders())
+                .ConfigureLogging((c, a) =>
+                {
+                    if (!EnableLogging)
+                        a.ClearProviders();
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

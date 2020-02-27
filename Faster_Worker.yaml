@@ -1,0 +1,73 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    caching.faster/port: '90'
+    caching.faster/enabled: 'true'
+  labels:
+    app: caching-faster-worker
+    name: caching-faster-worker-green
+    prometheus: 'true'
+  name: caching-faster-worker-green
+  namespace: faster
+spec:
+  replicas: 8
+  selector:
+    matchLabels:
+      name: caching-faster-worker-green
+  serviceName: caching-faster-worker
+  template:
+    metadata:
+      annotations:
+        caching.faster/port: '80'
+        caching.faster/enabled: 'true'
+      labels:
+        app: caching-faster-worker
+        name: caching-faster-worker-green
+        prometheus: 'true'
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: tier
+                operator: In
+                values:
+                - apps
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - caching-faster-worker
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      containers:
+      - env:
+        - name: RELEASE_KIND
+          value: green
+        - name: ASPNETCORE_URLS
+          value: https://*:80
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Production
+        image: jcbarrales/caching-faster-worker
+        # imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always 
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - "/bin/bash"
+              - "-c"
+              - sleep 10
+        name: app
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        resources: {}

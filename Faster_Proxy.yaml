@@ -1,0 +1,66 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: caching-faster-proxy
+    name: caching-faster-proxy-green
+    prometheus: 'true'
+  name: caching-faster-proxy-green
+  namespace: faster
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: caching-faster-proxy-green
+  serviceName: caching-faster-proxy
+  template:
+    metadata:
+      labels:
+        app: caching-faster-proxy
+        name: caching-faster-proxy-green
+        prometheus: 'true'
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: tier
+                operator: In
+                values:
+                - apps
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - caching-faster-proxy
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      containers:
+      - env:
+        - name: EnableLogging
+          value: "true"
+        - name: ASPNETCORE_URLS
+          value: https://*:80
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Production
+        image: jcbarrales/caching-faster-proxy
+        imagePullPolicy: Always
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - "/bin/bash"
+              - "-c"
+              - sleep 10
+        name: app
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        resources: {}
