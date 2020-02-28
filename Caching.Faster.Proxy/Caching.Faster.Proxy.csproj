@@ -59,4 +59,12 @@
     </None>
   </ItemGroup>
 
+  <Target Name="AddAssemblyAliasToReactiveAsync" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <ReferencePath Condition=" '%(FileName)' == 'System.Interactive.Async' ">
+        <Aliases>reactive</Aliases>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
+  
 </Project>
