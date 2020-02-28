@@ -16,8 +16,8 @@ namespace Caching.Faster.Workers.Extensions
         public static IServiceCollection AddFaster(this IServiceCollection services)
         {
             /// Faster log for Values
-            var log = Devices.CreateLogDevice("_log", deleteOnClose: true);
-            var objlog = Devices.CreateLogDevice("_objlog", deleteOnClose: true);
+            var log = Devices.CreateLogDevice("", deleteOnClose: true);
+            var objlog = Devices.CreateLogDevice("", deleteOnClose: true);
 
             var logSettings = new LogSettings
             {
@@ -27,8 +27,8 @@ namespace Caching.Faster.Workers.Extensions
             };
 
             /// Faster log for Headers
-            var log_header = Devices.CreateLogDevice("_logh", deleteOnClose: true);
-            var objlog_header = Devices.CreateLogDevice("_objlogh", deleteOnClose: true);
+            var log_header = Devices.CreateLogDevice("", deleteOnClose: true);
+            var objlog_header = Devices.CreateLogDevice("", deleteOnClose: true);
 
             var logSettings_header = new LogSettings
             {

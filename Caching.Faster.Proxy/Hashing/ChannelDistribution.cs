@@ -32,7 +32,6 @@ namespace Caching.Faster.Proxy.Hashing
         }
         public async IAsyncEnumerable<IEnumerable<Common.KeyValuePair>> GetValuePairs3(IEnumerable<string> keys, Stopwatch sw)
         {
-            //Console.WriteLine($"GetValuePairs3: Start getting paris");
 
             var k = new Dictionary<string, List<string>>();
 
@@ -52,8 +51,6 @@ namespace Caching.Faster.Proxy.Hashing
 
             }
 
-            //Console.WriteLine($"GetValuePairs3: time to get node {sw.ElapsedMilliseconds}");
-
             foreach (var key in k)
             {
                 var vs = new Worker.GetWorkerRequest();
@@ -61,20 +58,11 @@ namespace Caching.Faster.Proxy.Hashing
                 var rs = await consistentHash.GetGrpcChannel(consistentHash.GetNode(key.Value[0])).GetAsync(vs);
                 yield return rs.Results;
             }
-
-            //Console.WriteLine($"GetValuePairs3: end returning pairs {sw.ElapsedMilliseconds}");
-
         }
 
 
         public async IAsyncEnumerable<IEnumerable<Common.KeyValuePair>> SetValuePairs(IEnumerable<Common.KeyValuePair> keys)
         {
-            //var grpcWorkerClient = new GrpcWorker.GrpcWorkerClient(new Channel("localhost", 90, ChannelCredentials.Insecure));
-            //var eq = keys.First();
-            //var x = new SetWorkerRequest();
-            //x.Pairs.Add(new Faster.KeyValuePair() { Key = eq.Key, Status = eq.Status, Ttl = eq.Ttl, Value = eq.Value });
-            //var r = await grpcWorkerClient.SetAsync(x);
-
 
             var c = new Dictionary<string, GrpcWorkerClient>();
             var k = new Dictionary<string, List<Common.KeyValuePair>>();
@@ -97,7 +85,6 @@ namespace Caching.Faster.Proxy.Hashing
 
             }
 
-
             foreach (var pair in c)
             {
                 var x = new Worker.SetWorkerRequest();
@@ -108,8 +95,6 @@ namespace Caching.Faster.Proxy.Hashing
 
                 yield return rs.Results;
             }
-
-
         }
     }
 }
