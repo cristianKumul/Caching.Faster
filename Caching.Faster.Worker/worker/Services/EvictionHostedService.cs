@@ -14,7 +14,7 @@ namespace Caching.Faster.Worker.Services
     public class EvictionHostedService : IHostedService, IDisposable
     {
         private Timer _timer;
-        private readonly int _scrapeIntervalMinutes = 5;
+        private readonly int _scrapeIntervalMinutes = Convert.ToInt32(Environment.GetEnvironmentVariable("SCRAPE_INTERVAL_MINUTES"));
 
         private readonly ILogger<EvictionHostedService> _logger;
         private readonly FasterKV<Key, Value, Input, Output, CacheContext, CacheFunctions> values;
@@ -36,7 +36,7 @@ namespace Caching.Faster.Worker.Services
         {
             _logger.LogInformation("Eviction Service running.");
 
-            _timer = new Timer(DoWork, null, 0, _scrapeIntervalMinutes * 1_000 );
+            _timer = new Timer(DoWork, null, 0, _scrapeIntervalMinutes * 60_000 );
 
             return Task.CompletedTask;
         }

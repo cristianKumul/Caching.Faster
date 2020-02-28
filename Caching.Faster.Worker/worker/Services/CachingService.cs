@@ -70,8 +70,8 @@ namespace Caching.Faster.Worker
                     }
                     else
                     {
-                        headers.Delete(ref k, default, 0);
-                        faster.Delete(ref key1, default, 0);
+                        //headers.Delete(ref k, default, 0);
+                        //faster.Delete(ref key1, default, 0);
                     }
                     
                 }
@@ -104,7 +104,7 @@ namespace Caching.Faster.Worker
 
                     var k = new KeyHeader(key.Key);
 
-                    var v = new ValueHeader(uuid, (key.Ttl * 10) + Epoch);
+                    var v = new ValueHeader(uuid, key.Ttl + Epoch);
 
                     var vs = faster.Upsert(ref rk, ref rv, default, 0);
 
