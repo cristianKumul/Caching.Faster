@@ -35,7 +35,7 @@ namespace Caching.Faster.TestConsole
             var client = scope.ServiceProvider.GetRequiredService<ProxyGrpcClient>();
 
             var result = await client.SetKey("mykey", "helloworld", 10);
-            var getResult = await client.GetKey("mykey" );
+            var getResult = await client.GetKey<string>("mykey");
         }
 
         static async Task Main2(string[] args)

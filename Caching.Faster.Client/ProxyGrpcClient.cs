@@ -1,4 +1,5 @@
 ﻿using Caching.Faster.Common;
+using Caching.Faster.Proxy.Client.Models;
 using Google.Protobuf;
 using Grpc.Core;
 using System.Collections.Generic;
@@ -15,28 +16,30 @@ namespace Caching.Faster.Proxy.Client
         }
 
         public async Task<T> GetKey<T>(string key)
-        {
+        {   
             return (await GetKeys<T>(new[] { key })).FirstOrDefault();
         }
 
         public async Task<IEnumerable<T>> GetKeys<T>(IEnumerable<string> keys)
         {
             var results = (await base.GetAsync(keys.GetRequest())).Results;
-            return results.Select(keyValue => Utf8Json.JsonSerializer.Deserialize<T>(keyValue.Value.ToStringUtf8()));
+            return results.Where(keyValue => keyValue.Value.Length > 0).Select(keyValue => {
+                return Utf8Json.JsonSerializer.Deserialize<T>(keyValue.Value.ToStringUtf8());
+            });
         }
 
-        public async Task<KeyValuePair> SetKey(string key, string value, int ttl)
+        public async Task<KeyValuePair> SetKey<T>(string key, T value, int ttl)
         {
-            return (await SetKeys(new[] {new KeyValuePair()
+            return (await SetKeys(new[] { new KeyValuePair<T>()
                 {
                     Key = key,
-                    Value = ByteString.CopyFrom(Encoding.UTF8.GetBytes(value)),
+                    Value = value,
                     Ttl = ttl
                 }
             })).FirstOrDefault();
         }
 
-        public async Task<IEnumerable<KeyValuePair>> SetKeys(IEnumerable<KeyValuePair> keys)
+        public async Task<IEnumerable<KeyValuePair>> SetKeys<T>(IEnumerable<KeyValuePair<T>> keys)
         {
             return (await base.SetAsync(keys.SetRequest())).Results;
         }

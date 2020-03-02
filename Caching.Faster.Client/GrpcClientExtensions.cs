@@ -1,10 +1,12 @@
 ﻿using Caching.Faster;
 using Caching.Faster.Common;
 using Caching.Faster.Proxy.Client.Options;
+using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Caching.Faster.Proxy.Client
 {
@@ -36,11 +38,13 @@ namespace Caching.Faster.Proxy.Client
             return request;
         }
 
-        public static SetRequest SetRequest(this IEnumerable<KeyValuePair> keys)
+        public static SetRequest SetRequest<T>(this IEnumerable<Models.KeyValuePair<T>> keys)
         {
             var request = new SetRequest();
 
-            request.Pairs.AddRange(keys);
+            var keysGrpc = keys.Select(key => 
+                new KeyValuePair() { Key = key.Key, Value = ByteString.CopyFrom(Utf8Json.JsonSerializer.Serialize(key.Value)), Ttl = key.Ttl });
+            request.Pairs.AddRange(keysGrpc);
 
             return request;
         }
