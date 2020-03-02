@@ -14,15 +14,15 @@ namespace Caching.Faster.Proxy.Client
         {
         }
 
-        public async Task<KeyValuePair> GetKey(string key)
+        public async Task<T> GetKey<T>(string key)
         {
-            return (await GetKeys(new[] { key })).FirstOrDefault();
+            return (await GetKeys<T>(new[] { key })).FirstOrDefault();
         }
 
-        public async Task<IEnumerable<KeyValuePair>> GetKeys(IEnumerable<string> keys)
+        public async Task<IEnumerable<T>> GetKeys<T>(IEnumerable<string> keys)
         {
-
-            return (await base.GetAsync(keys.GetRequest())).Results;
+            var results = (await base.GetAsync(keys.GetRequest())).Results;
+            return results.Select(keyValue => Utf8Json.JsonSerializer.Deserialize<T>(keyValue.Value.ToStringUtf8()));
         }
 
         public async Task<KeyValuePair> SetKey(string key, string value, int ttl)

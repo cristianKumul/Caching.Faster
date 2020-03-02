@@ -30,8 +30,6 @@ namespace Caching.Faster.Worker
             this.faster.StartSession();
             this.headers.StartSession();
 
-
-
             var result = new GetWorkerResponse();
 
             foreach (var key in request.Key)
