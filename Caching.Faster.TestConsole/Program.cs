@@ -1,8 +1,12 @@
 ﻿using Caching.Faster.Proxy;
+using Caching.Faster.Proxy.Client;
+using Caching.Faster.Proxy.Client.Options;
 using Caching.Faster.Worker;
 using Google.Protobuf;
 using Grpc.Core;
 using Grpc.Net.Client;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,12 +19,31 @@ namespace Caching.Faster.TestConsole
 {
     class Program
     {
+        static async Task Main(string[] args)
+        {
+            ThreadPool.SetMinThreads(500, 500);
+            var services = new ServiceCollection();
+            var grpcOptions = new GrpcClientOptions()
+            {
+                Host = "172.25.157.120",
+                Port = 90
+            };
+
+            services.AddProxyClient(Options.Create(grpcOptions));
+
+            var scope = services.BuildServiceProvider().CreateScope();
+            var client = scope.ServiceProvider.GetRequiredService<ProxyGrpcClient>();
+
+            var result = await client.SetKey("mykey", "helloworld", 10);
+            var getResult = await client.GetKey("mykey" );
+        }
+
         static async Task Main2(string[] args)
         {
             //await Task.Delay(25000);
             ThreadPool.SetMinThreads(25000, 25000);
           
-            var channel0 = new Channel("172.25.185.145", 90, ChannelCredentials.Insecure);
+            var channel0 = new Channel("172.27.176.99", 90, ChannelCredentials.Insecure);
             var channel1 = new Channel("172.25.189.171", 90, ChannelCredentials.Insecure);
             var channel2 = new Channel("172.25.173.29", 90, ChannelCredentials.Insecure);
             var client0 = new ProxyCache.ProxyCacheClient(channel0);
@@ -89,7 +112,7 @@ namespace Caching.Faster.TestConsole
 
             }
         }
-        static async Task Main(string[] args)
+        static async Task Main3(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
             await Task.Delay(5000);

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Caching.Faster.Proxy
 {
-    public class CachingService : Caching.Faster.Proxy.ProxyCache.ProxyCacheBase
+    public class CachingService : ProxyCache.ProxyCacheBase
     {
         private readonly ChannelDistribution channeldistribution;
 

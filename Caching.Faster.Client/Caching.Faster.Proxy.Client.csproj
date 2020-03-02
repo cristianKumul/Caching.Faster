@@ -5,10 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\worker.proto" GrpcServices="Client" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.10.1" />
     <PackageReference Include="Grpc.Core" Version="2.25.0" />
     <PackageReference Include="Grpc.Tools" Version="2.24.0">
@@ -20,11 +16,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Caching.Faster.Abstractions\Caching.Faster.Abstractions.csproj" />
+    <Protobuf Include="Protos\proxy.proto" GrpcServices="ClientGrpc" />
+    <Protobuf Include="Protos\common.proto" GrpcServices="ClientGrpc" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Protos\worker.proto">
+    <None Update="Protos\proxy.proto">
+      <GrpcServices>Client</GrpcServices>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Protos\common.proto">
       <GrpcServices>Client</GrpcServices>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
