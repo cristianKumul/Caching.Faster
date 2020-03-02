@@ -70,8 +70,8 @@ namespace Caching.Faster.Worker
                     }
                     else
                     {
-                        //headers.Delete(ref k, default, 0);
-                        //faster.Delete(ref key1, default, 0);
+                        headers.Delete(ref k, default, 0);
+                        faster.Delete(ref key1, default, 0);
                     }
                     
                 }
