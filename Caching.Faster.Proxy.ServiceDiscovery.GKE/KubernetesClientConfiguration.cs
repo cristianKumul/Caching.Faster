@@ -63,7 +63,7 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE
 
                 return new KubernetesClientConfiguration
                 {
-                    Host = new UriBuilder("https", host, Convert.ToInt32(port)).ToString(),
+                    Host = new UriBuilder(host == "localhost" ? "http" : "https", host, Convert.ToInt32(port)).ToString(),
                     AccessToken = token,
                     SslCaCerts = LoadPemFileCert(@"ca.crt")
                 };

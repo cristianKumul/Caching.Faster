@@ -39,12 +39,12 @@ namespace Caching.Faster.TestConsole
             var getResult = await client.GetKey<string>("mykey");
         }
 
-        static async Task Main2(string[] args)
+        static async Task Main(string[] args)
         {
             //await Task.Delay(25000);
             ThreadPool.SetMinThreads(25000, 25000);
           
-            var channel0 = new Channel("172.27.176.99", 90, ChannelCredentials.Insecure);
+            var channel0 = new Channel("127.0.0.1", 92, ChannelCredentials.Insecure);
             var channel1 = new Channel("172.25.189.171", 90, ChannelCredentials.Insecure);
             var channel2 = new Channel("172.25.173.29", 90, ChannelCredentials.Insecure);
             var client0 = new ProxyCache.ProxyCacheClient(channel0);
@@ -113,7 +113,7 @@ namespace Caching.Faster.TestConsole
 
             }
         }
-        static async Task Main(string[] args)
+        static async Task Main3(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
             await Task.Delay(5000);
