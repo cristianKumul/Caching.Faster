@@ -23,9 +23,9 @@ namespace Caching.Faster.Proxy.Client
         public async Task<IEnumerable<T>> GetKeys<T>(IEnumerable<string> keys)
         {
             var results = (await base.GetAsync(keys.GetRequest())).Results;
-            return results.Where(keyValue => keyValue.Value.Length > 0).Select(keyValue => {
-                return Utf8Json.JsonSerializer.Deserialize<T>(keyValue.Value.ToStringUtf8());
-            });
+            return results
+                        .Where(keyValue => keyValue.Value.Length > 0)
+                        .Select(keyValue => Utf8Json.JsonSerializer.Deserialize<T>(keyValue.Value.ToStringUtf8()));
         }
 
         public async Task<KeyValuePair> SetKey<T>(string key, T value, int ttl)
