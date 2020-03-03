@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -19,7 +20,7 @@ namespace Caching.Faster.TestConsole
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main1(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
             var services = new ServiceCollection();
@@ -112,7 +113,7 @@ namespace Caching.Faster.TestConsole
 
             }
         }
-        static async Task Main3(string[] args)
+        static async Task Main(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
             await Task.Delay(5000);
@@ -135,9 +136,9 @@ namespace Caching.Faster.TestConsole
             //var channel1 = GrpcChannel.ForAddress("https://172.25.164.211:80");
             //var channel2 = GrpcChannel.ForAddress("https://172.25.164.211:80");
             var client0 = new GrpcWorker.GrpcWorkerClient(channel0);
-            var client1 = new GrpcWorker.GrpcWorkerClient(channel0);
-            var client2 = new GrpcWorker.GrpcWorkerClient(channel0);
-            var client3 = new GrpcWorker.GrpcWorkerClient(channel0);
+            //var client1 = new GrpcWorker.GrpcWorkerClient(channel0);
+            //var client2 = new GrpcWorker.GrpcWorkerClient(channel0);
+            //var client3 = new GrpcWorker.GrpcWorkerClient(channel0);
             // await run(client0);
             var sw = new Stopwatch();
 
@@ -150,7 +151,16 @@ namespace Caching.Faster.TestConsole
             await Task.Delay(15000);
              valor = client0.Get(GetRequest("superkey"));
             Console.WriteLine($"now is value is {valor.Results[0].Value?.Length}");
-           // Console.ReadLine();
+
+            var valueDeleted = client0.Delete(GetRequest("superkey"));
+            Console.WriteLine($"Values has been deleted {valueDeleted.Results[0].Status}");
+
+            var valueNotDeleted = client0.Delete(GetRequest("superkey-notexist"));
+            Console.WriteLine($"Values has been deleted {valueNotDeleted.Results.FirstOrDefault()?.Status ?? false}");
+
+            valor = client0.Get(GetRequest("superkey"));
+            Console.WriteLine($"now is value is {valor.Results[0].Value?.Length}");
+            // Console.ReadLine();
             //var s = valor.Results[0].Value.ToString(UTF8Encoding.UTF8);
 
             for (int i = 0; i < 1000000; i++)
@@ -291,10 +301,12 @@ namespace Caching.Faster.TestConsole
         private static SetWorkerRequest SetRequest(string key, string value)
         {
             var rq = new SetWorkerRequest();
-            var pair = new Common.KeyValuePair();
-            pair.Key = key;
-            pair.Ttl = 1;
-            pair.Value = ByteString.CopyFrom(Encoding.UTF8.GetBytes(value));
+            var pair = new Common.KeyValuePair
+            {
+                Key = key,
+                Ttl = Convert.ToInt32(TimeSpan.Parse("00:01:00").TotalSeconds),
+                Value = ByteString.CopyFrom(Encoding.UTF8.GetBytes(value))
+            };
             rq.Pairs.Add(pair);
 
             return rq;

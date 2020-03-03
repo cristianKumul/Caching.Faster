@@ -31,9 +31,6 @@ namespace Caching.Faster.Proxy
                 response.Results.Add(p);
             }
 
-            //Console.WriteLine($"get: writing response {sw.ElapsedMilliseconds}");
-            //Console.WriteLine($"\n\n");
-
             return response;
         }
 
@@ -46,6 +43,19 @@ namespace Caching.Faster.Proxy
                 response.Results.AddRange(p);
             }
 
+            return response;
+        }
+
+        public override async Task<SetResponse> Delete(GetRequest request, ServerCallContext context)
+        {
+            var response = new SetResponse();
+
+            // await foreach (var p in channeldistribution.SetValuePairs(request.Pairs))
+            // {
+            //     response.Results.AddRange(p);
+            // }
+
+            // return response;
             return response;
         }
     }

@@ -43,17 +43,14 @@ namespace Caching.Faster.Proxy
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-
             var server = new Server
             {
                 Ports = { new ServerPort("0.0.0.0", 90, ServerCredentials.Insecure) }
             };
 
-
             server.Services.Add(Caching.Faster.Proxy.ProxyCache.BindService(app.ApplicationServices.CreateScope().ServiceProvider.GetService<CachingService>()));
 
             server.Start();
-
         }
     }
 }

@@ -128,6 +128,47 @@ namespace Caching.Faster.Worker
             return Task.FromResult(result);
         }
 
+        public override Task<SetWorkerResponse> Delete(GetWorkerRequest request, ServerCallContext context)
+        {
+            this.faster.StartSession();
+            this.headers.StartSession();
+
+            var result = new SetWorkerResponse();
+
+            foreach (var key in request.Key)
+            {
+                var x = new Common.KeyValuePair()
+                {
+                    Key = key,
+                    Value = ByteString.Empty
+                };
+
+                var k = new KeyHeader(key);
+
+                var v = new ValueHeader();
+
+                var o = new KeyHeader();
+
+                this.headers.Read(ref k, ref o, ref v, default, 0);
+
+                if (v.epoch <= 0) continue;
+
+                var key1 = new Key(v.uuid);
+
+                var hs = this.headers.Delete(ref k, default, 0);
+                var vs = this.faster.Delete(ref key1, default, 0);
+
+                x.Status = vs != FASTER.core.Status.ERROR && hs != FASTER.core.Status.ERROR;
+
+                result.Results.Add(x);
+            }
+
+            this.faster.StopSession();
+            this.headers.StopSession();
+
+            return Task.FromResult(result);
+        }
+
         #region old     
         //public override Task<GetWorkerResponse> Get(GetWorkerRequest request, ServerCallContext context)
         //{
