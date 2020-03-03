@@ -44,7 +44,7 @@ namespace Caching.Faster.TestConsole
             //await Task.Delay(25000);
             ThreadPool.SetMinThreads(25000, 25000);
           
-            var channel0 = new Channel("127.0.0.1", 92, ChannelCredentials.Insecure);
+            var channel0 = new Channel("172.25.157.165", 90, ChannelCredentials.Insecure);
             var channel1 = new Channel("172.25.189.171", 90, ChannelCredentials.Insecure);
             var channel2 = new Channel("172.25.173.29", 90, ChannelCredentials.Insecure);
             var client0 = new ProxyCache.ProxyCacheClient(channel0);
@@ -52,7 +52,20 @@ namespace Caching.Faster.TestConsole
             var client2 = new ProxyCache.ProxyCacheClient(channel2);
             var response = client0.Set(SetPRequest("superkey", "hola mundo"));
 
+            Console.WriteLine("Status Set keys {0}", response.Results.FirstOrDefault().Status);
+
             var valor = client0.Get(GetPRequest("superkey"));
+
+            Console.WriteLine("Fetch Value  {0}", valor.Results.FirstOrDefault().Value.ToStringUtf8());
+
+            var deleted = await client0.DeleteAsync(SetPRequest("superkey"));
+
+            Console.WriteLine("Value deleted {0}", deleted.Results.FirstOrDefault().Status);
+
+            var deletedNonExist = await client0.DeleteAsync(SetPRequest("superkey-notexists"));
+
+            Console.WriteLine("Value not deleted {0}", deletedNonExist.Results.FirstOrDefault().Status);
+
             var sw = new Stopwatch();
             for (int i = 0; i < 1000000; i++)
             {
@@ -322,13 +335,29 @@ namespace Caching.Faster.TestConsole
 
         }
 
-        private static SetRequest SetPRequest(string key, string value)
+        private static SetRequest SetPRequest(string key)
         {
             var rq = new SetRequest();
-            var pair = new Common.KeyValuePair();
-            pair.Key = key;
-            pair.Ttl = 15;
-            pair.Value = ByteString.CopyFrom(Encoding.UTF8.GetBytes(value));
+            var pair = new Common.KeyValuePair
+            {
+                Key = key,
+                Value = ByteString.Empty
+            };
+            rq.Pairs.Add(pair);
+
+            return rq;
+
+        }
+
+        private static Caching.Faster.Proxy.SetRequest SetPRequest(string key, string value)
+        {
+            var rq = new SetRequest();
+            var pair = new Common.KeyValuePair
+            {
+                Key = key,
+                Ttl = 15,
+                Value = ByteString.CopyFrom(Encoding.UTF8.GetBytes(value))
+            };
             rq.Pairs.Add(pair);
 
             return rq;
