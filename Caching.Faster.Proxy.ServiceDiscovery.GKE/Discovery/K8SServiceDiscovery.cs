@@ -13,7 +13,7 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE
 
         // this is intended for caching arrays
         private const int resizeFactor = 32;
-        
+
         // cached namespaces that refresh every 5 minutes
         private string[] namespaces;
 
@@ -42,12 +42,16 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE
 
             // lets try the first discover attempt
             Initilize();
+
+            workers.Join(new Worker() { Address = "localhost", Port = 90, IsActive = true, Name = "localpod" });
+            OnDiscoveryCompleted?.Invoke(this, workers);
         }
 
         public void Initilize()
         {
-            DiscoverNamespaces();
-            DiscoverWorkers();
+            //TODO: Uncomment
+            //DiscoverNamespaces();
+            //DiscoverWorkers();
         }
 
         /// <summary>
@@ -55,6 +59,7 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE
         /// </summary>
         public void RefreshWorkers()
         {
+
             //will go through all observed namespaces to figureout how many workers we have
             foreach (var ns in observedNamespaces)
             {
@@ -80,7 +85,7 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE
             {
                 if (ns is null)
                     continue;
-                
+
                 // so we have a pod list, lets parse it
                 ParsePod(ns, kubernetesClient.ListNamespacedPod(ns), true);
             }
@@ -187,7 +192,7 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE
             {
                 Array.Resize(ref namespaces, nsd.Count + resizeFactor);
             }
-                
+
 
             // setting new ones
             for (int i = 0; i < nsd.Count; i++)

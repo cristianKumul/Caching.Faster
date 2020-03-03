@@ -45,7 +45,7 @@ namespace Caching.Faster.Proxy
         {
             var server = new Server
             {
-                Ports = { new ServerPort("0.0.0.0", 90, ServerCredentials.Insecure) }
+                Ports = { new ServerPort("0.0.0.0", 91, ServerCredentials.Insecure) }
             };
 
             server.Services.Add(Caching.Faster.Proxy.ProxyCache.BindService(app.ApplicationServices.CreateScope().ServiceProvider.GetService<CachingService>()));

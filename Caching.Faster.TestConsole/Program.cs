@@ -41,12 +41,12 @@ namespace Caching.Faster.TestConsole
 
         static async Task Main(string[] args)
         {
-            //await Task.Delay(25000);
+            await Task.Delay(35000);
             ThreadPool.SetMinThreads(25000, 25000);
           
-            var channel0 = new Channel("172.25.157.165", 90, ChannelCredentials.Insecure);
-            var channel1 = new Channel("172.25.189.171", 90, ChannelCredentials.Insecure);
-            var channel2 = new Channel("172.25.173.29", 90, ChannelCredentials.Insecure);
+            var channel0 = new Channel("localhost", 91, ChannelCredentials.Insecure);
+            var channel1 = new Channel("localhost", 91, ChannelCredentials.Insecure);
+            var channel2 = new Channel("localhost", 91, ChannelCredentials.Insecure);
             var client0 = new ProxyCache.ProxyCacheClient(channel0);
             var client1 = new ProxyCache.ProxyCacheClient(channel1);
             var client2 = new ProxyCache.ProxyCacheClient(channel2);
@@ -56,7 +56,7 @@ namespace Caching.Faster.TestConsole
 
             var valor = client0.Get(GetPRequest("superkey"));
 
-            Console.WriteLine("Fetch Value  {0}", valor.Results.FirstOrDefault().Value.ToStringUtf8());
+            Console.WriteLine("Fetch Value  {0}", valor.Results.FirstOrDefault().Value..ToStringUtf8());
 
             var deleted = await client0.DeleteAsync(SetPRequest("superkey"));
 
@@ -64,7 +64,7 @@ namespace Caching.Faster.TestConsole
 
             var deletedNonExist = await client0.DeleteAsync(SetPRequest("superkey-notexists"));
 
-            Console.WriteLine("Value not deleted {0}", deletedNonExist.Results.FirstOrDefault().Status);
+            Console.WriteLine("Value not deleted {0}", deletedNonExist?.Results?.FirstOrDefault()?.Status);
 
             var sw = new Stopwatch();
             for (int i = 0; i < 1000000; i++)
@@ -129,7 +129,7 @@ namespace Caching.Faster.TestConsole
         static async Task Main3(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
-            await Task.Delay(5000);
+            await Task.Delay(25000);
 
             //var httpClientHandler = new HttpClientHandler();
             //httpClientHandler.CheckCertificateRevocationList = false;

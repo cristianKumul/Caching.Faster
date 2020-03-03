@@ -29,8 +29,8 @@ namespace Caching.Faster.Worker
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging((c, a) =>
                 {
-                    if (!EnableLogging)
-                        a.ClearProviders();
+                    //if (!EnableLogging)
+                    //    a.ClearProviders();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

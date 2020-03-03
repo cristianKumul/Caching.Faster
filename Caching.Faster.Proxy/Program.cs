@@ -22,8 +22,8 @@ namespace Caching.Faster.Proxy
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging((c, a) =>
                 {
-                    if (!EnableLogging)
-                        a.ClearProviders();
+                    //if (!EnableLogging)
+                    //    a.ClearProviders();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
