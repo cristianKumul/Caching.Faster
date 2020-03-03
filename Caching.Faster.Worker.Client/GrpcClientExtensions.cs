@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Caching.Faster.Workers.Client
 {
@@ -22,6 +23,14 @@ namespace Caching.Faster.Workers.Client
             return request;
         }
 
+        public static SetWorkerRequest SetRequest(this IEnumerable<string> keys)
+        {
+            var request = new SetWorkerRequest();
+
+            request.Pairs.AddRange( keys.Select(p => new KeyValuePair() { Key = p}));
+
+            return request;
+        }
 
         public static IEnumerable<KeyValuePair>  GetKeyValuePair (this GetWorkerResponse response)
         {

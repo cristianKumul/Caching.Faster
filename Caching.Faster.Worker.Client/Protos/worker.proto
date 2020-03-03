@@ -7,7 +7,7 @@ package Worker;
 service GrpcWorker {
   rpc Get (GetWorkerRequest) returns (GetWorkerResponse);
   rpc Set (SetWorkerRequest) returns (SetWorkerResponse);
-  rpc Delete (GetWorkerRequest) returns (SetWorkerResponse);
+  rpc Delete (SetWorkerRequest) returns (SetWorkerResponse);
 }
 
 message GetWorkerRequest {

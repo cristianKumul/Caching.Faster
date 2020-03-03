@@ -128,14 +128,14 @@ namespace Caching.Faster.Worker
             return Task.FromResult(result);
         }
 
-        public override Task<SetWorkerResponse> Delete(GetWorkerRequest request, ServerCallContext context)
+        public override Task<SetWorkerResponse> Delete(SetWorkerRequest request, ServerCallContext context)
         {
             this.faster.StartSession();
             this.headers.StartSession();
 
             var result = new SetWorkerResponse();
 
-            foreach (var key in request.Key)
+            foreach (var key in request.Pairs.Select(p => p.Key))
             {
                 var x = new Common.KeyValuePair()
                 {
