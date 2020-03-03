@@ -32,13 +32,11 @@ namespace Caching.Faster.Proxy.Hashing
         }
         public async IAsyncEnumerable<IEnumerable<Common.KeyValuePair>> GetValuePairs3(IEnumerable<string> keys, Stopwatch sw)
         {
-
             var k = new Dictionary<string, List<string>>();
 
             foreach (var key in keys)
             {
                 var node = consistentHash.GetNode(key);
-
 
                 if (k.TryGetValue(node.Address, out var list))
                 {

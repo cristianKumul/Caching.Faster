@@ -58,6 +58,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
   <Target Name="AddAssemblyAliasToReactiveAsync" AfterTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <ReferencePath Condition=" '%(FileName)' == 'System.Interactive.Async' ">
@@ -65,4 +66,5 @@
       </ReferencePath>
     </ItemGroup>
   </Target>
+  
 </Project>

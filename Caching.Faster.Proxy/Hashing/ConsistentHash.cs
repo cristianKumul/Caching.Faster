@@ -95,6 +95,8 @@ namespace Caching.Faster.Proxy.Hashing
 
         private void Add(Caching.Faster.Abstractions.Worker node, bool updateKeyArray)
         {
+            if (node.Port == 0 || string.IsNullOrEmpty(node.Address)) return;
+
             Logger.LogInformation($"Joining {node.Name} with endpoint {node.Address} on port {node.Port}");
 
             if (!channels.TryGetValue(node.Address, out _))
@@ -119,6 +121,8 @@ namespace Caching.Faster.Proxy.Hashing
 
         public void Remove(Caching.Faster.Abstractions.Worker node)
         {
+            if (node.Port == 0 || string.IsNullOrEmpty(node.Address)) return;
+
             Logger.LogInformation($"Joining {node.Name} with endpoint {node.Address} on port {node.Port}");
 
             if (channels.TryGetValue(node.Address, out _))

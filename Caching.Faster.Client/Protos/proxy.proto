@@ -9,7 +9,6 @@ import "Protos/common.proto";
 service ProxyCache {
   rpc Get (GetRequest) returns (GetResponse);
   rpc Set (SetRequest) returns (SetResponse);
-  rpc Delete (GetRequest) returns (SetResponse);
 }
 
 message GetRequest {
