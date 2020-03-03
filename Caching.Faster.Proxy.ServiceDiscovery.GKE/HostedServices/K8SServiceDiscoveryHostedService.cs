@@ -35,6 +35,7 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE.HostedServices
 
         private void DoWork(object state)
         {
+ 
             //lets set a max count to 60000 then reset
             if (_executionCount > 60000)
                 _executionCount = 0;

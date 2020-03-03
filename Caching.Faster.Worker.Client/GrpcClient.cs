@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Caching.Faster.Worker;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

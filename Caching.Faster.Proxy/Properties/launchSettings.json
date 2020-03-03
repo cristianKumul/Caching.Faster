@@ -3,13 +3,13 @@
     "Caching.Faster.Proxy": {
       "commandName": "Project",
       "launchBrowser": false,
-      "applicationUrl": "https://localhost:5001",
+      "applicationUrl": "https://localhost:5002",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production",
-        //"KUBERNETES_SERVICE_PORT": "443",
-        //"KUBERNETES_SERVICE_HOST": "35.202.120.10"
-        "KUBERNETES_SERVICE_PORT": "9090",
-        "KUBERNETES_SERVICE_HOST": "localhost"
+        "KUBERNETES_SERVICE_PORT": "443",
+        "KUBERNETES_SERVICE_HOST": "35.202.120.10"
+        //"KUBERNETES_SERVICE_PORT": "9090",
+        //"KUBERNETES_SERVICE_HOST": "localhost"
       }
     }
   }

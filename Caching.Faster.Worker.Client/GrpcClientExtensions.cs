@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Caching.Faster.Worker;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Caching.Faster.Workers.Client
