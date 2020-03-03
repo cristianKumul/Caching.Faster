@@ -152,10 +152,10 @@ namespace Caching.Faster.TestConsole
              valor = client0.Get(GetRequest("superkey"));
             Console.WriteLine($"now is value is {valor.Results[0].Value?.Length}");
 
-            var valueDeleted = client0.Delete(GetRequest("superkey"));
+            var valueDeleted = client0.Delete(SetRequest("superkey", ""));
             Console.WriteLine($"Values has been deleted {valueDeleted.Results[0].Status}");
 
-            var valueNotDeleted = client0.Delete(GetRequest("superkey-notexist"));
+            var valueNotDeleted = client0.Delete(SetRequest("superkey-notexist", ""));
             Console.WriteLine($"Values has been deleted {valueNotDeleted.Results.FirstOrDefault()?.Status ?? false}");
 
             valor = client0.Get(GetRequest("superkey"));

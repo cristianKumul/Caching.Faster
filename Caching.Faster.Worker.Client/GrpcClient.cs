@@ -26,7 +26,7 @@ namespace Caching.Faster.Workers.Client
 
         public async Task<IEnumerable<KeyValuePair>> DeleteKeys(IEnumerable<string> keys)
         {
-            return (await client.DeleteAsync(keys.GetRequest())).Results;
+            return (await client.DeleteAsync(keys.SetRequest())).Results;
         }
     }
 }

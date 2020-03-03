@@ -94,5 +94,41 @@ namespace Caching.Faster.Proxy.Hashing
                 yield return rs.Results;
             }
         }
+
+        public async IAsyncEnumerable<IEnumerable<Common.KeyValuePair>> DeleteValuePairs(IEnumerable<Common.KeyValuePair> keys)
+        {
+
+            var c = new Dictionary<string, GrpcWorkerClient>();
+            var k = new Dictionary<string, List<Common.KeyValuePair>>();
+
+            foreach (var key in keys)
+            {
+                var node = consistentHash.GetNode(key.Key);
+                var client = consistentHash.GetGrpcChannel(node);
+
+                c.TryAdd(node.Address, client);
+
+                if (k.TryGetValue(node.Address, out var list))
+                {
+                    list.Add(key);
+                }
+                else
+                {
+                    k.Add(node.Address, new List<Common.KeyValuePair>() { key });
+                }
+
+            }
+
+            foreach (var pair in c)
+            {
+                var x = new Worker.SetWorkerRequest();
+
+                x.Pairs.AddRange(k[pair.Key]);
+
+                var rs = await pair.Value.DeleteAsync(x);
+
+                yield return rs.Results;
+            }
+        }
     }
 }

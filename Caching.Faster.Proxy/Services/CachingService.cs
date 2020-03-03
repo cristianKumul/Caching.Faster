@@ -46,17 +46,17 @@ namespace Caching.Faster.Proxy
             return response;
         }
 
-        public override async Task<SetResponse> Delete(GetRequest request, ServerCallContext context)
+        public override async Task<SetResponse> Delete(SetRequest request, ServerCallContext context)
         {
             var response = new SetResponse();
 
-            // await foreach (var p in channeldistribution.SetValuePairs(request.Pairs))
-            // {
-            //     response.Results.AddRange(p);
-            // }
+            await foreach (var p in channeldistribution.DeleteValuePairs(request.Pairs))
+            {
+                response.Results.AddRange(p);
+            }
 
-            // return response;
             return response;
         }
+
     }
 }
