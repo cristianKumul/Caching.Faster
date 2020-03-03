@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "Caching.Faster";
+option csharp_namespace = "Caching.Faster.Worker";
 
 package Worker;
 
