@@ -2,7 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.0.1</Version>
+    <Authors>Juan Carlos Rodríguez Cruz</Authors>
+    <PackageProjectUrl>https://github.com/JoseBarrales/Caching.Faster</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JoseBarrales/Caching.Faster</RepositoryUrl>
+    <Company />
   </PropertyGroup>
 
   <ItemGroup>

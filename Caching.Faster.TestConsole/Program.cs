@@ -28,7 +28,7 @@ namespace Caching.Faster.TestConsole
             var services = new ServiceCollection();
             var grpcOptions = new GrpcClientOptions()
             {
-                Host = "172.25.187.229",
+                Host = "172.25.189.16",
                 Port = 90
             };
 
