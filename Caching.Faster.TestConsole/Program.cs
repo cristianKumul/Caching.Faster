@@ -23,13 +23,13 @@ namespace Caching.Faster.TestConsole
         static async Task Main(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
-            await Task.Delay(35000);
+            //await Task.Delay(35000);
 
             var services = new ServiceCollection();
             var grpcOptions = new GrpcClientOptions()
             {
-                Host = "localhost",
-                Port = 91
+                Host = "172.25.187.229",
+                Port = 90
             };
 
             services.AddProxyClient(Options.Create(grpcOptions));

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 
 namespace Caching.Faster.Proxy
@@ -41,8 +42,9 @@ namespace Caching.Faster.Proxy
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
+            logger.LogInformation("Starting up Proxy server {MachineName}", Environment.MachineName);
             var server = new Server
             {
                 Ports = { new ServerPort("0.0.0.0", 90, ServerCredentials.Insecure) }
