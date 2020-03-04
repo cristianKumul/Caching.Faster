@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "Caching.Faster.Exporter": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
