@@ -43,15 +43,15 @@ namespace Caching.Faster.Proxy.ServiceDiscovery.GKE
             // lets try the first discover attempt
             Initilize();
 
-            workers.Join(new Worker() { Address = "localhost", Port = 90, IsActive = true, Name = "localpod" });
-            OnDiscoveryCompleted?.Invoke(this, workers);
+            // UNCOMMENT FOR TESTING ONLY
+            //workers.Join(new Worker() { Address = "localhost", Port = 90, IsActive = true, Name = "localpod" });
+            //OnDiscoveryCompleted?.Invoke(this, workers);
         }
 
         public void Initilize()
         {
-            //TODO: Uncomment
-            //DiscoverNamespaces();
-            //DiscoverWorkers();
+            DiscoverNamespaces();
+            DiscoverWorkers();
         }
 
         /// <summary>

@@ -3,10 +3,14 @@ using Caching.Faster.Common;
 using Caching.Faster.Proxy.Client.Options;
 using Google.Protobuf;
 using Grpc.Core;
+using MessagePack;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Caching.Faster.Proxy.Client
 {
@@ -42,9 +46,20 @@ namespace Caching.Faster.Proxy.Client
         {
             var request = new SetRequest();
 
-            var keysGrpc = keys.Select(key => 
-                new KeyValuePair() { Key = key.Key, Value = ByteString.CopyFrom(Utf8Json.JsonSerializer.Serialize(key.Value)), Ttl = key.Ttl });
-            request.Pairs.AddRange(keysGrpc);
+            request.Pairs.AddRange(keys.Select(key => new KeyValuePair() { 
+                Key = key.Key, 
+                Value = ByteString.CopyFrom(MessagePackSerializer.Serialize(key.Value).AsSpan()), 
+                Ttl = key.Ttl 
+            }));
+
+            return request;
+        }
+
+        public static SetRequest SetRequest(this IEnumerable<string> keys)
+        {
+            var request = new SetRequest();
+
+            request.Pairs.AddRange(keys.Select(key => new KeyValuePair() { Key = key }));
 
             return request;
         }

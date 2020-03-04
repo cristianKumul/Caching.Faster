@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Caching.Faster.Proxy.ServiceDiscovery.GKE.HostedServices;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,8 +18,8 @@ namespace Caching.Faster.Proxy
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging((c, a) =>
                 {
-                    //if (!EnableLogging)
-                    //    a.ClearProviders();
+                    if (!EnableLogging)
+                        a.ClearProviders();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

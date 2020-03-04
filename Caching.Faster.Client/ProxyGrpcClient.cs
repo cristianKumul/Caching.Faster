@@ -2,6 +2,7 @@
 using Caching.Faster.Proxy.Client.Models;
 using Google.Protobuf;
 using Grpc.Core;
+using MessagePack;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,7 +26,7 @@ namespace Caching.Faster.Proxy.Client
             var results = (await base.GetAsync(keys.GetRequest())).Results;
             return results
                         .Where(keyValue => keyValue.Value.Length > 0)
-                        .Select(keyValue => Utf8Json.JsonSerializer.Deserialize<T>(keyValue.Value.ToStringUtf8()));
+                        .Select(keyValue => MessagePackSerializer.Deserialize<T>(keyValue.Value.Span.ToArray()));
         }
 
         public async Task<KeyValuePair> SetKey<T>(string key, T value, int ttl)
@@ -42,6 +43,16 @@ namespace Caching.Faster.Proxy.Client
         public async Task<IEnumerable<KeyValuePair>> SetKeys<T>(IEnumerable<KeyValuePair<T>> keys)
         {
             return (await base.SetAsync(keys.SetRequest())).Results;
+        }
+
+        public async Task<KeyValuePair> DeleteKey(string key)
+        {
+            return (await DeleteKeys(new[] { key }))?.FirstOrDefault() ?? default;
+        }
+
+        public async Task<IEnumerable<KeyValuePair>> DeleteKeys(IEnumerable<string> keys)
+        {
+            return (await base.DeleteAsync(keys.SetRequest()))?.Results ?? default;
         }
     }
 }

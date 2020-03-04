@@ -52,7 +52,7 @@ namespace Caching.Faster.Worker
                 headers.Read(ref k, ref o, ref v, default, 0);
 
 
-                if (v.epoch != -1)
+                if (v.epoch > 0)
                 {
                     var input = default(Input);
 

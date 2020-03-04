@@ -18,9 +18,6 @@ namespace Caching.Faster.Worker
             ThreadPool.SetMinThreads(1000, 1000);
 
             CreateHostBuilder(args).Build().Run();
-
-
-
         }
 
         // Additional configuration is required to successfully run gRPC on macOS.
@@ -29,8 +26,8 @@ namespace Caching.Faster.Worker
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging((c, a) =>
                 {
-                    //if (!EnableLogging)
-                    //    a.ClearProviders();
+                    if (!EnableLogging)
+                        a.ClearProviders();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

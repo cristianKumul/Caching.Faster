@@ -20,14 +20,16 @@ namespace Caching.Faster.TestConsole
 {
     class Program
     {
-        static async Task Main1(string[] args)
+        static async Task Main(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
+            await Task.Delay(35000);
+
             var services = new ServiceCollection();
             var grpcOptions = new GrpcClientOptions()
             {
-                Host = "172.25.157.120",
-                Port = 90
+                Host = "localhost",
+                Port = 91
             };
 
             services.AddProxyClient(Options.Create(grpcOptions));
@@ -35,11 +37,28 @@ namespace Caching.Faster.TestConsole
             var scope = services.BuildServiceProvider().CreateScope();
             var client = scope.ServiceProvider.GetRequiredService<ProxyGrpcClient>();
 
-            var result = await client.SetKey("mykey", "helloworld", 10);
-            var getResult = await client.GetKey<string>("mykey");
+            var result = await client.SetKey("mykey", new { hola = "hola" }, 1000);
+
+            Console.WriteLine("Status Set keys {0}", result.Status);
+
+            var getResult = await client.GetKey<object>("mykey");
+
+            Console.WriteLine("Value of Get keys {0}", getResult);
+
+            var delete = await client.DeleteKey("mykey");
+
+            Console.WriteLine("Deleted keys {0}", delete.Status);
+
+            getResult = await client.GetKey<object>("mykey");
+
+            Console.WriteLine("Second validation after delete Get keys {0}", getResult);
+
+            var deleteNonExists = await client.DeleteKey("mykey-notexists");
+
+            Console.WriteLine("Deleted keys {0}", deleteNonExists?.Status ?? false);
         }
 
-        static async Task Main(string[] args)
+        static async Task Main2(string[] args)
         {
             await Task.Delay(35000);
             ThreadPool.SetMinThreads(25000, 25000);
@@ -56,7 +75,7 @@ namespace Caching.Faster.TestConsole
 
             var valor = client0.Get(GetPRequest("superkey"));
 
-            Console.WriteLine("Fetch Value  {0}", valor.Results.FirstOrDefault().Value..ToStringUtf8());
+            Console.WriteLine("Fetch Value  {0}", valor.Results.FirstOrDefault().Value.ToStringUtf8());
 
             var deleted = await client0.DeleteAsync(SetPRequest("superkey"));
 
