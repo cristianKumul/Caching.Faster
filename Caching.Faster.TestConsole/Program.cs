@@ -148,7 +148,7 @@ namespace Caching.Faster.TestConsole
         static async Task Main(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
-            await Task.Delay(25000);
+           // await Task.Delay(25000);
 
             //var httpClientHandler = new HttpClientHandler();
             //httpClientHandler.CheckCertificateRevocationList = false;
@@ -174,31 +174,31 @@ namespace Caching.Faster.TestConsole
             // await run(client0);
             var sw = new Stopwatch();
 
-         //   var valor2 = client0.Get(GetRequest("superkey"));
+            //   var valor2 = client0.Get(GetRequest("superkey"));
 
 
-            
-            var response = client0.Set(SetRequest("superkey", "hola mundo"));
-            var response2 = client0.Set(SetRequest("superkey1", "hola mundo"));
-            var response3 = client0.Set(SetRequest("superkey2", "hola mundo"));
-            var valor = client0.Get(GetRequest("superkey"));
-            Console.WriteLine($"value is {valor.Results[0].Value?.Length}");
-            await Task.Delay(15000);
-             valor = client0.Get(GetRequest("superkey"));
-            Console.WriteLine($"now is value is {valor.Results[0].Value?.Length}");
+           
+            //var response = client0.Set(SetRequest($"{Guid.NewGuid()}", "hola mundo"));
+            //var response2 = client0.Set(SetRequest($"{Guid.NewGuid()}", "hola mundo"));
+            //var response3 = client0.Set(SetRequest($"{Guid.NewGuid()}", "hola mundo"));
+            //var valor = client0.Get(GetRequest("superkey"));
+            //Console.WriteLine($"value is {valor.Results[0].Value?.Length}");
+            ////await Task.Delay(15000);
+            // valor = client0.Get(GetRequest("superkey"));
+            //Console.WriteLine($"now is value is {valor.Results[0].Value?.Length}");
 
-            var valueDeleted = client0.Delete(SetRequest("superkey", ""));
-            Console.WriteLine($"Values has been deleted {valueDeleted.Results[0].Status}");
+            ////var valueDeleted = client0.Delete(SetRequest("superkey", ""));
+            ////Console.WriteLine($"Values has been deleted {valueDeleted.Results[0].Status}");
 
-            var valueNotDeleted = client0.Delete(SetRequest("superkey-notexist", ""));
-            Console.WriteLine($"Values has been deleted {valueNotDeleted.Results.FirstOrDefault()?.Status ?? false}");
+            ////var valueNotDeleted = client0.Delete(SetRequest("superkey-notexist", ""));
+            ////Console.WriteLine($"Values has been deleted {valueNotDeleted.Results.FirstOrDefault()?.Status ?? false}");
 
-            valor = client0.Get(GetRequest("superkey"));
-            Console.WriteLine($"now is value is {valor.Results[0].Value?.Length}");
+            //valor = client0.Get(GetRequest("superkey"));
+            //Console.WriteLine($"now is value is {valor.Results[0].Value?.Length}");
             // Console.ReadLine();
             //var s = valor.Results[0].Value.ToString(UTF8Encoding.UTF8);
 
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 10; i++)
             {
 
 
@@ -211,50 +211,11 @@ namespace Caching.Faster.TestConsole
 
                 var tasks = new[]
                 {
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
-                    run(client0),
                     run(client0)
+
                 };
                 await Task.WhenAll(tasks);
                 Console.WriteLine($"Elapsed {sw.ElapsedMilliseconds} ratio {40000 / sw.Elapsed.TotalSeconds }");
-                await Task.Delay(4000);
-
-
             }
 
             //valor = client0.Get(GetRequest("superkey"));
@@ -268,9 +229,9 @@ namespace Caching.Faster.TestConsole
             ////if (Encoding.UTF8.GetString(valor.Results[0].Value.ToByteArray()) == "hola mundo")
             ////    Console.WriteLine("funciono!");
 
-            var c = new Caching.Faster.Proxy.ServiceDiscovery.GKE.K8SServiceDiscovery();
-            c.Initilize();
+
             Console.WriteLine("Hello World!");
+            Console.ReadKey();
         }
 
         public static int ma = 0;
@@ -286,9 +247,14 @@ namespace Caching.Faster.TestConsole
 
         private static Task run(GrpcWorker.GrpcWorkerClient client)
         {
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 2; i++)
             {
-                client.SetAsync(SetRequest(Guid.NewGuid().ToString(), "hola mundo"));
+                client.SetAsync(SetRequest(Guid.NewGuid().ToString() + @"reducing hash collisions. The hash bucket for a key with hash value
+h is first identified using the first k bits of h, called the offset of
+h.The next 15 bits of h are called the tag of h.Tags only serve to
+increase the hashing resolution and may be smaller, or removed
+entirely, depending on the size of the address. The tentative bit is
+necessary for insert, and will be covered shortly", "hola mundo"));
             }
             return Task.CompletedTask;
         }
@@ -339,7 +305,7 @@ namespace Caching.Faster.TestConsole
             var pair = new Common.KeyValuePair
             {
                 Key = key,
-                Ttl = Convert.ToInt32(TimeSpan.Parse("00:01:00").TotalSeconds),
+                Ttl = Convert.ToInt32(TimeSpan.Parse("00:10:00").TotalSeconds),
                 Value = ByteString.CopyFrom(Encoding.UTF8.GetBytes(value))
             };
             rq.Pairs.Add(pair);
