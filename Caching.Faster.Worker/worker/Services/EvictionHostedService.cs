@@ -73,12 +73,15 @@ namespace Caching.Faster.Worker.Services
                     evictedMetric.EvictedKeysByHostedService();
                 }
 
-                currentScrappedMemory = iter.NextAddress;
+                currentScrappedMemory = iter.CurrentAddress;
 
                 iterations++;
             }
             totalKeys.Set((headers.Log.TailAddress - 32) / 32);
 
+            _logger.LogDebug("Last iteration {currentScrappedMemory}", currentScrappedMemory);
+            _logger.LogDebug("Last tail address {tailAddress}", headers.Log.TailAddress);
+            _logger.LogDebug($"Total Keys {(headers.Log.TailAddress - 32) / 32}");
         }
 
         private IFasterScanIterator<KeyHeader,ValueHeader> GetIterator()

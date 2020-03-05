@@ -7,7 +7,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "EnableLogging": "true",
-        "SCRAPE_CHUNK_SIZE": "5000",
+        "SCRAPE_CHUNK_SIZE": "5",
         "SCRAPE_INTERVAL_MINUTES": "1"
       }
     }
