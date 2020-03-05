@@ -30,7 +30,7 @@
 
   
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="2.23.1" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.23.2" />
     <ProjectReference Include="..\Caching.Faster.Client\Caching.Faster.Proxy.Client.csproj" />
     <ProjectReference Include="..\Caching.Faster.Proxy.ServiceDiscovery.GKE\Caching.Faster.Proxy.ServiceDiscovery.GKE.csproj" />
   </ItemGroup>

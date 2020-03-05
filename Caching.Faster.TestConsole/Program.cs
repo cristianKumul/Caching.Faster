@@ -20,7 +20,7 @@ namespace Caching.Faster.TestConsole
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main1(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
             //await Task.Delay(35000);
@@ -145,7 +145,7 @@ namespace Caching.Faster.TestConsole
 
             }
         }
-        static async Task Main3(string[] args)
+        static async Task Main(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
             await Task.Delay(25000);
@@ -177,7 +177,10 @@ namespace Caching.Faster.TestConsole
          //   var valor2 = client0.Get(GetRequest("superkey"));
 
 
+            
             var response = client0.Set(SetRequest("superkey", "hola mundo"));
+            var response2 = client0.Set(SetRequest("superkey1", "hola mundo"));
+            var response3 = client0.Set(SetRequest("superkey2", "hola mundo"));
             var valor = client0.Get(GetRequest("superkey"));
             Console.WriteLine($"value is {valor.Results[0].Value?.Length}");
             await Task.Delay(15000);
