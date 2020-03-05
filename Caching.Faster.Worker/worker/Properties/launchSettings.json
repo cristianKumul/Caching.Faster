@@ -6,6 +6,8 @@
       "applicationUrl": "https://localhost:5001",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
+        "EnableLogging": "true",
+        "SCRAPE_CHUNK_SIZE": "5000",
         "SCRAPE_INTERVAL_MINUTES": "1"
       }
     }

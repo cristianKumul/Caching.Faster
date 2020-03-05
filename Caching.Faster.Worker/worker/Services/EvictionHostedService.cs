@@ -17,11 +17,15 @@ namespace Caching.Faster.Worker.Services
     {
         private Timer _timer;
         private readonly int _scrapeIntervalMinutes = Convert.ToInt32(Environment.GetEnvironmentVariable("SCRAPE_INTERVAL_MINUTES"));
+        private readonly int _chunkSize = Convert.ToInt32(Environment.GetEnvironmentVariable("SCRAPE_CHUNK_SIZE"));
 
         private readonly ILogger<EvictionHostedService> _logger;
         private readonly FasterKV<Key, Value, Input, Output, CacheContext, CacheFunctions> values;
         private readonly FasterKV<KeyHeader, ValueHeader, KeyHeader, ValueHeader, CacheContext, HeaderCacheFunctions> headers;
         private readonly EvictedMetric evictedMetric;
+        private readonly static Gauge totalKeys = Metrics.CreateGauge("faster_total_keys", "Number of keys");
+
+        private static long currentScrappedMemory = 32;
 
         public long Epoch => (int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
 
@@ -41,16 +45,16 @@ namespace Caching.Faster.Worker.Services
         {
             _logger.LogInformation("Eviction Service running.");
 
-            _timer = new Timer(DoWork, null, 0, _scrapeIntervalMinutes * 60_000 );
+            _timer = new Timer(DoWork, null, 0, _scrapeIntervalMinutes * 10_000 );//todo
 
             return Task.CompletedTask;
         }
 
         private void DoWork(object state)
         {
-            using var iter = headers.Log.Scan(32, headers.Log.TailAddress);
-
-            while (iter.GetNext(out var info, out var key, out var value))
+            using var iter = GetIterator();
+            int iterations = 0;
+            while (iter.GetNext(out var info, out var key, out var value) && iterations <= _chunkSize)
             {
                 if (value.epoch <= Epoch)
                 {
@@ -68,7 +72,23 @@ namespace Caching.Faster.Worker.Services
 
                     evictedMetric.EvictedKeysByHostedService();
                 }
+
+                currentScrappedMemory = iter.NextAddress;
+
+                iterations++;
             }
+            totalKeys.Set((headers.Log.TailAddress - 32) / 32);
+
+        }
+
+        private IFasterScanIterator<KeyHeader,ValueHeader> GetIterator()
+        {
+            if (currentScrappedMemory == headers.Log.TailAddress)
+            {
+                currentScrappedMemory = 32;
+            }
+
+            return headers.Log.Scan(currentScrappedMemory, headers.Log.TailAddress);
         }
 
         public Task StopAsync(CancellationToken stoppingToken)
