@@ -4,6 +4,7 @@ using Caching.Faster.Workers.Client;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
+using Prometheus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,8 +24,9 @@ namespace Caching.Faster.Proxy.Hashing
         readonly SortedDictionary<int, Caching.Faster.Abstractions.Worker> circle = new SortedDictionary<int, Caching.Faster.Abstractions.Worker>();
         readonly SortedDictionary<string, GrpcWorkerClient> channels = new SortedDictionary<string, GrpcWorkerClient>();
 
-
         public ILogger<ConsistentHash> Logger { get; }
+
+        private readonly static Gauge totalWorkers = Metrics.CreateGauge("faster_total_workers", "Number of workers connected to the proxy");
 
         public ConsistentHash(ILogger<ConsistentHash> logger)
         {
@@ -34,13 +36,17 @@ namespace Caching.Faster.Proxy.Hashing
 
         private void K8SServiceDiscoveryHostedService_OnDiscoveryCompleted(object sender, FasterWorkers e)
         {
+            var workers = e.GetWorkers().Where(node => node.Port > 0 && !string.IsNullOrEmpty(node.Address) && !string.IsNullOrWhiteSpace(node.Address));
+            totalWorkers.Set(workers.Count());
+
             if (!_initialized)
             {
-                Init(e.GetWorkers());
+                Init(workers);
             }
             else
             {
-                foreach (var w in e.GetWorkers())
+
+                foreach (var w in workers)
                 {
                     var found = false;
                     foreach (var cw in circle.Values)
@@ -95,8 +101,6 @@ namespace Caching.Faster.Proxy.Hashing
 
         private void Add(Caching.Faster.Abstractions.Worker node, bool updateKeyArray)
         {
-            if (node.Port == 0 || string.IsNullOrEmpty(node.Address) || string.IsNullOrWhiteSpace(node.Address)) return;
-
             Logger.LogInformation($"Joining {node.Name} with endpoint {node.Address} on port {node.Port}");
 
             if (!channels.TryGetValue(node.Address, out _))
@@ -121,8 +125,6 @@ namespace Caching.Faster.Proxy.Hashing
 
         public void Remove(Caching.Faster.Abstractions.Worker node)
         {
-            if (node.Port == 0 || string.IsNullOrEmpty(node.Address) || string.IsNullOrWhiteSpace(node.Address)) return;
-
             Logger.LogInformation($"Joining {node.Name} with endpoint {node.Address} on port {node.Port}");
 
             if (channels.TryGetValue(node.Address, out _))

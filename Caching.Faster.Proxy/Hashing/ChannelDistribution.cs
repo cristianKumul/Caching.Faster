@@ -19,9 +19,9 @@ namespace Caching.Faster.Proxy.Hashing
             this.consistentHash = consistentHash;
         }
 
-        public async IAsyncEnumerable<Common.KeyValuePair> GetValuePairs(IEnumerable<string> keys, Stopwatch sw)
+        public async IAsyncEnumerable<Common.KeyValuePair> GetValuePairs(IEnumerable<string> keys)
         {
-            await foreach (var item in GetValuePairs3(keys, sw))
+            await foreach (var item in GetValuePairs3(keys))
             {
                 foreach (var keypair in item)
                 {
@@ -30,7 +30,7 @@ namespace Caching.Faster.Proxy.Hashing
             }
 
         }
-        public async IAsyncEnumerable<IEnumerable<Common.KeyValuePair>> GetValuePairs3(IEnumerable<string> keys, Stopwatch sw)
+        public async IAsyncEnumerable<IEnumerable<Common.KeyValuePair>> GetValuePairs3(IEnumerable<string> keys)
         {
             var k = new Dictionary<string, List<string>>();
 

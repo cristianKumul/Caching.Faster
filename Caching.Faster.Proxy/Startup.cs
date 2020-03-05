@@ -1,6 +1,7 @@
 ﻿using Caching.Faster.Proxy.Hashing;
 using Caching.Faster.Proxy.ServiceDiscovery.GKE;
 using Caching.Faster.Proxy.ServiceDiscovery.GKE.HostedServices;
+using BestDay.Prometheus.AspNetCore.Extensions.Implementations;
 using Grpc.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using Prometheus;
+using BestDay.Prometheus.AspNetCore.Extensions.Tracking;
 
 namespace Caching.Faster.Proxy
 {
@@ -53,6 +56,16 @@ namespace Caching.Faster.Proxy
             server.Services.Add(Caching.Faster.Proxy.ProxyCache.BindService(app.ApplicationServices.CreateScope().ServiceProvider.GetService<CachingService>()));
 
             server.Start();
+
+            app.UseMetricServer();
+
+            app.UseGrpcMiddlewares();
+
+            app.GetGrpcPipelineBuilder()
+            .UseExceptionHandler((context, ex) =>
+            {
+                logger.LogError(ex, "Error grpc service method: {Method} message: {Message}", context.Method, ex.Message);
+            });
         }
     }
 }
