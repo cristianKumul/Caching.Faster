@@ -54,13 +54,13 @@ namespace Caching.Faster.Worker.Services
         {
             using var iter = GetIterator();
             int iterations = 0;
-            while (iter.GetNext(out var info, out var key, out var value) && iterations <= _chunkSize)
+            while (iter.GetNext(out var info, out var key, out var value) && iterations < _chunkSize)
             {
                 if (value.epoch <= Epoch)
                 {
                     values.StartSession();
                     headers.StartSession();
-
+                    
                     headers.Delete(ref key, default, 0);
 
                     var v = new Key(value.uuid);
@@ -73,15 +73,11 @@ namespace Caching.Faster.Worker.Services
                     evictedMetric.EvictedKeysByHostedService();
                 }
 
-                currentScrappedMemory = iter.CurrentAddress;
-
+                currentScrappedMemory = iter.NextAddress;
+                
                 iterations++;
             }
             totalKeys.Set((headers.Log.TailAddress - 32) / 32);
-
-            _logger.LogDebug("Last iteration {currentScrappedMemory}", currentScrappedMemory);
-            _logger.LogDebug("Last tail address {tailAddress}", headers.Log.TailAddress);
-            _logger.LogDebug($"Total Keys {(headers.Log.TailAddress - 32) / 32}");
         }
 
         private IFasterScanIterator<KeyHeader,ValueHeader> GetIterator()

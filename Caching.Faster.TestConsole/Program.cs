@@ -211,7 +211,7 @@ namespace Caching.Faster.TestConsole
 
                 var tasks = new[]
                 {
-                    run(client0)
+                    run(client0, i)
 
                 };
                 await Task.WhenAll(tasks);
@@ -245,16 +245,11 @@ namespace Caching.Faster.TestConsole
             return Task.CompletedTask;
         }
 
-        private static Task run(GrpcWorker.GrpcWorkerClient client)
+        private static Task run(GrpcWorker.GrpcWorkerClient client, int count)
         {
             for (int i = 0; i < 2; i++)
             {
-                client.SetAsync(SetRequest(Guid.NewGuid().ToString() + @"reducing hash collisions. The hash bucket for a key with hash value
-h is first identified using the first k bits of h, called the offset of
-h.The next 15 bits of h are called the tag of h.Tags only serve to
-increase the hashing resolution and may be smaller, or removed
-entirely, depending on the size of the address. The tentative bit is
-necessary for insert, and will be covered shortly", "hola mundo"));
+                client.SetAsync(SetRequest($"{count}_{i}_{Guid.NewGuid()}", "hola mundo"));
             }
             return Task.CompletedTask;
         }
