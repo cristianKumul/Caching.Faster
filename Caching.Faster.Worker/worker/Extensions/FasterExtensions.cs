@@ -1,4 +1,5 @@
 ﻿using Caching.Faster.Worker;
+using Caching.Faster.Worker.Collectors;
 using Caching.Faster.Worker.Core;
 using Caching.Faster.Workers.Core;
 using FASTER.core;
@@ -72,7 +73,7 @@ namespace Caching.Faster.Workers.Extensions
 
             //faster.Log.Scan(faster.Log.BeginAddress, faster.Log.TailAddress);
 
-            server.Services.Add(GrpcWorker.BindService(new CachingService(Values, Headers)));
+            server.Services.Add(GrpcWorker.BindService(new CachingService(Values, Headers, app.ApplicationServices.GetService<EvictedMetric>())));
 
             server.Start();
 

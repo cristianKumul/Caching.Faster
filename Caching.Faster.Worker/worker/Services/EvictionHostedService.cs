@@ -1,8 +1,10 @@
-﻿using Caching.Faster.Worker.Core;
+﻿using Caching.Faster.Worker.Collectors;
+using Caching.Faster.Worker.Core;
 using Caching.Faster.Workers.Core;
 using FASTER.core;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Prometheus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,17 +21,20 @@ namespace Caching.Faster.Worker.Services
         private readonly ILogger<EvictionHostedService> _logger;
         private readonly FasterKV<Key, Value, Input, Output, CacheContext, CacheFunctions> values;
         private readonly FasterKV<KeyHeader, ValueHeader, KeyHeader, ValueHeader, CacheContext, HeaderCacheFunctions> headers;
+        private readonly EvictedMetric evictedMetric;
 
         public long Epoch => (int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
 
         public EvictionHostedService(
             ILogger<EvictionHostedService> logger,
             FasterKV<Key, Value, Input, Output, CacheContext, CacheFunctions> values,
-            FasterKV<KeyHeader, ValueHeader, KeyHeader, ValueHeader, CacheContext, HeaderCacheFunctions> headers)
+            FasterKV<KeyHeader, ValueHeader, KeyHeader, ValueHeader, CacheContext, HeaderCacheFunctions> headers,
+            EvictedMetric evictedMetric)
         {
             _logger = logger;
             this.values = values;
             this.headers = headers;
+            this.evictedMetric = evictedMetric;
         }
 
         public Task StartAsync(CancellationToken stoppingToken)
@@ -60,6 +65,8 @@ namespace Caching.Faster.Worker.Services
 
                     values.StopSession();
                     headers.StopSession();
+
+                    evictedMetric.EvictedKeysByHostedService();
                 }
             }
         }

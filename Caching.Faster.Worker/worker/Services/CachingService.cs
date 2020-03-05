@@ -7,6 +7,8 @@ using Grpc.Core;
 using System;
 using Caching.Faster.Worker.Core;
 using Caching.Faster.Worker.Core.IdGenerator;
+using Prometheus;
+using Caching.Faster.Worker.Collectors;
 
 namespace Caching.Faster.Worker
 {
@@ -14,23 +16,30 @@ namespace Caching.Faster.Worker
     {
         private readonly FasterKV<Key, Value, Input, Output, CacheContext, CacheFunctions> faster;
         private readonly FasterKV<KeyHeader, ValueHeader, KeyHeader, ValueHeader, CacheContext, HeaderCacheFunctions> headers;
+        private readonly EvictedMetric evictedMetric;
+        private readonly static Counter totalHits = Metrics.CreateCounter("faster_total_hits", "Number of hits keys");
+        private readonly static Counter totalMisses = Metrics.CreateCounter("faster_total_misses", "Number of misses keys");
 
         public CachingService(
             FasterKV<Key, Value, Input, Output, CacheContext, CacheFunctions> faster,
-            FasterKV<KeyHeader, ValueHeader, KeyHeader, ValueHeader, CacheContext, HeaderCacheFunctions> headers
+            FasterKV<KeyHeader, ValueHeader, KeyHeader, ValueHeader, CacheContext, HeaderCacheFunctions> headers,
+            EvictedMetric evictedMetric
             )
         {
             this.faster = faster;
             this.headers = headers;
+            this.evictedMetric = evictedMetric;
         }
 
         public long Epoch => (int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
         public override Task<GetWorkerResponse> Get(GetWorkerRequest request, ServerCallContext context)
         {
+
             this.faster.StartSession();
             this.headers.StartSession();
 
             var result = new GetWorkerResponse();
+            var hits = 0;
 
             foreach (var key in request.Key)
             {
@@ -65,11 +74,14 @@ namespace Caching.Faster.Worker
                         faster.Read(ref key1, ref input, ref output, default, 0);
 
                         x.Value = ByteString.CopyFrom(output.value.value ?? new byte[] { 0x0 });
+
+                        hits++;
                     }
                     else
                     {
                         headers.Delete(ref k, default, 0);
                         faster.Delete(ref key1, default, 0);
+                        evictedMetric.EvictedKeysByExpiration();
                     }
                     
                 }
@@ -79,6 +91,9 @@ namespace Caching.Faster.Worker
 
             faster.StopSession();
             headers.StopSession();
+
+            totalHits.Inc(hits);
+            totalMisses.Inc(request.Key.Count() - hits);
 
             return Task.FromResult(result);
         }
