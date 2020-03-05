@@ -20,7 +20,7 @@ namespace Caching.Faster.TestConsole
 {
     class Program
     {
-        static async Task Main1(string[] args)
+        static async Task Main(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
             //await Task.Delay(35000);
@@ -145,7 +145,7 @@ namespace Caching.Faster.TestConsole
 
             }
         }
-        static async Task Main(string[] args)
+        static async Task Main3(string[] args)
         {
             ThreadPool.SetMinThreads(500, 500);
            // await Task.Delay(25000);
