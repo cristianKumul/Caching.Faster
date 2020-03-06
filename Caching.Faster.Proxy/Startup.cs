@@ -48,18 +48,15 @@ namespace Caching.Faster.Proxy
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             logger.LogInformation("Starting up Proxy server {MachineName}", Environment.MachineName);
-            var server = new Server
-            {
-                Ports = { new ServerPort("0.0.0.0", 90, ServerCredentials.Insecure) }
-            };
 
-            server.Services.Add(Caching.Faster.Proxy.ProxyCache.BindService(app.ApplicationServices.CreateScope().ServiceProvider.GetService<CachingService>()));
+            app.UseRouting();
+            app.UseEndpoints(endpoints => endpoints.MapMetrics());
 
-            server.Start();
+            app.UseGrpcServer("0.0.0.0", 90)
+                .MapService(ProxyCache.BindService(app.ApplicationServices.CreateScope().ServiceProvider.GetService<CachingService>()))
+                .Start();
 
-            app.UseMetricServer();
-
-            app.UseGrpcMiddlewares();
+            
 
             app.GetGrpcPipelineBuilder()
             .UseExceptionHandler((context, ex) =>

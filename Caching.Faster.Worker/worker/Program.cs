@@ -31,7 +31,15 @@ namespace Caching.Faster.Worker
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder
+                        .UseStartup<Startup>()
+                        .ConfigureKestrel(options =>
+                        {
+                            options.ConfigureEndpointDefaults(listenOptions =>
+                            {
+                                listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+                            });
+                        });
                 });
     }
 }

@@ -42,6 +42,8 @@ namespace Caching.Faster.Proxy.Client
 
         public async Task<IEnumerable<KeyValuePair>> SetKeys<T>(IEnumerable<KeyValuePair<T>> keys)
         {
+            var request = keys.SetRequest();
+            var result = await base.SetAsync(request);
             return (await base.SetAsync(keys.SetRequest())).Results;
         }
 

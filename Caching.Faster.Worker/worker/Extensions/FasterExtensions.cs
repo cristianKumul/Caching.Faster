@@ -1,4 +1,5 @@
-﻿using Caching.Faster.Worker;
+﻿using BestDay.Prometheus.AspNetCore.Extensions.Implementations;
+using Caching.Faster.Worker;
 using Caching.Faster.Worker.Collectors;
 using Caching.Faster.Worker.Core;
 using Caching.Faster.Workers.Core;
@@ -6,6 +7,7 @@ using FASTER.core;
 using Grpc.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Caching.Faster.Workers.Extensions
 {
@@ -64,18 +66,17 @@ namespace Caching.Faster.Workers.Extensions
             return services;
         }
 
-        public static IApplicationBuilder UseFasterWithGrpc(this IApplicationBuilder app)
+        public static IApplicationBuilder UseFasterWithGrpc(this IApplicationBuilder app, ILogger<Startup> logger)
         {
-            var server = new Server
-            {
-                Ports = { new ServerPort("0.0.0.0", 90, ServerCredentials.Insecure) }
-            };
+            app.UseGrpcServer("0.0.0.0", 90)
+                .MapService(GrpcWorker.BindService(new CachingService(Values, Headers, app.ApplicationServices.GetService<EvictedMetric>())))
+                .Start();
 
-            //faster.Log.Scan(faster.Log.BeginAddress, faster.Log.TailAddress);
-
-            server.Services.Add(GrpcWorker.BindService(new CachingService(Values, Headers, app.ApplicationServices.GetService<EvictedMetric>())));
-
-            server.Start();
+            app.GetGrpcPipelineBuilder()
+                .UseExceptionHandler((context, ex) =>
+                {
+                    logger.LogError(ex, "Error grpc service method: {Method} message: {Message}", context.Method, ex.Message);
+                });
 
             return app;
         }

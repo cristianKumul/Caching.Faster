@@ -1,9 +1,6 @@
-﻿using BestDay.Prometheus.AspNetCore.Extensions.Implementations;
-using BestDay.Prometheus.AspNetCore.Extensions.Tracking;
-using Caching.Faster.Worker.Collectors;
+﻿using Caching.Faster.Worker.Collectors;
 using Caching.Faster.Worker.Services;
 using Caching.Faster.Workers.Extensions;
-using Grpc.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,18 +21,10 @@ namespace Caching.Faster.Worker
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
-            app.UseFasterWithGrpc();
+            app.UseFasterWithGrpc(logger);
 
-            app.UseMetricServer();
-
-            app.UseGrpcMiddlewares();
-
-            app.GetGrpcPipelineBuilder()
-            .UseExceptionHandler((context, ex) =>
-            {
-                logger.LogError(ex, "Error grpc service method: {Method} message: {Message}", context.Method, ex.Message);
-            });
-
+            app.UseRouting();
+            app.UseEndpoints(endpoints => endpoints.MapMetrics());
         }
     }
 }

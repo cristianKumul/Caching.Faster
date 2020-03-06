@@ -23,7 +23,15 @@ namespace Caching.Faster.Proxy
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder
+                        .UseStartup<Startup>()
+                        .ConfigureKestrel(options =>
+                        {
+                            options.ConfigureEndpointDefaults(listenOptions =>
+                            {
+                                listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+                            });
+                        });
                 })
                 .ConfigureServices(services =>
                 {

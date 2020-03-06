@@ -5,7 +5,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:3.0-buster AS build
 WORKDIR /src
 COPY . .
-RUN dotnet restore "worker/Caching.Faster.Worker.csproj"
+RUN dotnet restore "worker/Caching.Faster.Worker.csproj"  --configfile Nuget.config
 
 RUN dotnet build "worker/Caching.Faster.Worker.csproj" -c Release -o /app
 

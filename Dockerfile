@@ -5,7 +5,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:3.0-buster AS build
 WORKDIR /src
 COPY . .
-RUN dotnet restore "Caching.Faster.Proxy/Caching.Faster.Proxy.csproj"
+RUN dotnet restore "Caching.Faster.Proxy/Caching.Faster.Proxy.csproj" --configfile Nuget.config
 RUN dotnet build "Caching.Faster.Proxy/Caching.Faster.Proxy.csproj" -c Release -o /app
 
 FROM build AS publish

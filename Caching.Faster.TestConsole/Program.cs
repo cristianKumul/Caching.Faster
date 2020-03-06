@@ -28,7 +28,7 @@ namespace Caching.Faster.TestConsole
             var services = new ServiceCollection();
             var grpcOptions = new GrpcClientOptions()
             {
-                Host = "172.25.189.16",
+                Host = "172.25.189.157",
                 Port = 90
             };
 
@@ -36,16 +36,30 @@ namespace Caching.Faster.TestConsole
 
             var scope = services.BuildServiceProvider().CreateScope();
             var client = scope.ServiceProvider.GetRequiredService<ProxyGrpcClient>();
+            var task = new List<Task>();
+            for (var i = 0; i < 1000; i++)
+            {
+                var result = client.SetKey($"{Guid.NewGuid()}", new { hola = "holasdfadsfa" }, (int)TimeSpan.Parse("00:01:00").TotalMilliseconds);
+                var result2 = client.SetKey($"{Guid.NewGuid()}", new { hola = "hoasdfasdla" }, (int)TimeSpan.Parse("00:01:00").TotalMilliseconds);
+                var result3 = client.SetKey($"{Guid.NewGuid()}", new { hola = "asdfasdf" }, (int)TimeSpan.Parse("00:01:00").TotalMilliseconds);
+                var result4 = client.SetKey($"{Guid.NewGuid()}", new { hola = "asfdasdfasdf" }, (int)TimeSpan.Parse("00:01:00").TotalMilliseconds);
+                task.Add(result);
+                task.Add(result2);
+                task.Add(result3);
+                task.Add(result4);
+            }
 
-            var result = await client.SetKey("mykey", new { hola = "hola" }, 1000);
+            await Task.WhenAll(task);
 
-            Console.WriteLine("Status Set keys {0}", result.Status);
-
-            var getResult = await client.GetKey<object>("mykey");
+            var getResult = await client.GetKey<object>("mykey0");
+            var getResult1 = await client.GetKey<object>("mykey1");
+            var getResult2 = await client.GetKey<object>("mykey2");
+            var getResult3 = await client.GetKey<object>("mykey3");
+            var getResult4 = await client.GetKey<object>("mykey4");
 
             Console.WriteLine("Value of Get keys {0}", getResult);
 
-            var delete = await client.DeleteKey("mykey");
+            var delete = await client.DeleteKey("mykey0");
 
             Console.WriteLine("Deleted keys {0}", delete.Status);
 

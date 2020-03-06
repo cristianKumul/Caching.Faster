@@ -8,7 +8,7 @@ namespace Caching.Faster.Worker.Collectors
 {
     public class EvictedMetric
     {
-        private readonly static Counter Evicted = Metrics.CreateCounter("faster_total_keys_evicted", "Total of keys evicted", new CounterConfiguration()
+        private readonly static Gauge Evicted = Metrics.CreateGauge("faster_total_keys_evicted", "Total of keys evicted", new GaugeConfiguration()
         {
             LabelNames = new[] { "method" }
         });
